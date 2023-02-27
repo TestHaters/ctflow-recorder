@@ -33,11 +33,3 @@ yarn runn build-chrome
 
 3. After installed, we can run `yarn run start-chrome`, and start on local
    development.
-
----
-
-## Made with ❤️ by [DeploySentinel](https://deploysentinel.com)
-
-Use DeploySentinel to save hours of failed Cypress test debugging by using DOM,
-network, and console events captured from your CI.
-[Learn more.](https://deploysentinel.com)
