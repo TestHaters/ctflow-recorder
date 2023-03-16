@@ -750,6 +750,8 @@ export class CypressScriptBuilder extends ScriptBuilder {
     const pairs = this.codes
       .slice(0, -1)
       .map((node, index) => [node, this.codes[index + 1]]);
+
+    // For each pair, create an edge
     const edges = pairs.map(([node, nextNode]) => {
       const id = uuid();
       const sourceId = node.split(':')[0].trim();
@@ -764,6 +766,7 @@ export class CypressScriptBuilder extends ScriptBuilder {
     type: customEdge
     `;
     });
+
     return `nodes:${this.codes.join('')}\nedges: ${edges.join('\n')}`;
   };
 }
