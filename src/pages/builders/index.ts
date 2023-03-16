@@ -745,7 +745,7 @@ export class CypressScriptBuilder extends ScriptBuilder {
     //   ''
     // )}});`;
 
-    // from this.codes, make split to pairs of 2
+    // from this.codes, split to pairs of 2
     // For example [1,2,3,4] -> [[1,2], [2,3], [3,4]]
     const pairs = this.codes
       .slice(0, -1)
