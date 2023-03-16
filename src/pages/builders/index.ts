@@ -744,7 +744,27 @@ export class CypressScriptBuilder extends ScriptBuilder {
     // return `it('Written with DeploySentinel Recorder', () => {${this.codes.join(
     //   ''
     // )}});`;
-    return `nodes:${this.codes.join('')}\nedges: {}`;
+
+    // from this.codes, make split to pairs of 2
+    // For example [1,2,3,4] -> [[1,2], [2,3], [3,4]]
+    const pairs = this.codes
+      .slice(0, -1)
+      .map((node, index) => [node, this.codes[index + 1]]);
+    const edges = pairs.map(([node, nextNode]) => {
+      const id = uuid();
+      const sourceId = node.split(':')[0].trim();
+      const targetId = nextNode.split(':')[0].trim();
+      return `
+  ${id}:
+    id: ${id}
+    source: ${sourceId}
+    sourceHandle: null
+    target: ${targetId}
+    targetHandle: null
+    type: customEdge
+    `;
+    });
+    return `nodes:${this.codes.join('')}\nedges: ${edges.join('\n')}`;
   };
 }
 
