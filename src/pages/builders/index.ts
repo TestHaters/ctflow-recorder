@@ -636,7 +636,7 @@ export class CypressScriptBuilder extends ScriptBuilder {
   };
 
   hover = (selector: string, causesNavigation: boolean) => {
-    this.pushCodes(`cy.get('${selector}').trigger('mouseover');`);
+    // this.pushCodes(`cy.get('${selector}').trigger('mouseover');`);
     return this;
   };
 
@@ -691,17 +691,17 @@ export class CypressScriptBuilder extends ScriptBuilder {
   };
 
   type = (selector: string, value: string, causesNavigation: boolean) => {
-    this.pushCodes(`cy.get('${selector}').type(${JSON.stringify(value)});`);
+    // this.pushCodes(`cy.get('${selector}').type(${JSON.stringify(value)});`);
     return this;
   };
 
   select = (selector: string, option: string, causesNavigation: boolean) => {
-    this.pushCodes(`cy.get('${selector}').select('${option}');`);
+    // this.pushCodes(`cy.get('${selector}').select('${option}');`);
     return this;
   };
 
   keydown = (selector: string, key: string, causesNavigation: boolean) => {
-    this.pushCodes(`cy.get('${selector}').type('{${key}}');`);
+    // this.pushCodes(`cy.get('${selector}').type('{${key}}');`);
     return this;
   };
 
@@ -711,21 +711,21 @@ export class CypressScriptBuilder extends ScriptBuilder {
     pageXOffset?: number,
     pageYOffset?: number
   ) => {
-    this.pushCodes(
-      `cy.scrollTo(${Math.floor(pageXOffset ?? 0)}, ${Math.floor(
-        pageYOffset ?? 0
-      )});`
-    );
+    // this.pushCodes(
+    //   `cy.scrollTo(${Math.floor(pageXOffset ?? 0)}, ${Math.floor(
+    //     pageYOffset ?? 0
+    //   )});`
+    // );
     return this;
   };
 
   fullScreenshot = () => {
-    this.pushCodes(`cy.screenshot();`);
+    // this.pushCodes(`cy.screenshot();`);
     return this;
   };
 
   awaitText = (text: string) => {
-    this.pushCodes(`cy.contains('${text}');`);
+    // this.pushCodes(`cy.contains('${text}');`);
     return this;
   };
 
@@ -736,7 +736,7 @@ export class CypressScriptBuilder extends ScriptBuilder {
     targetY: number
   ) => {
     // TODO -> IMPLEMENT ME
-    this.pushCodes('');
+    // this.pushCodes('');
     return this;
   };
 
