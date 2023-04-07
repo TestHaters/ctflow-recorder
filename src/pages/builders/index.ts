@@ -636,7 +636,7 @@ export class CypressScriptBuilder extends ScriptBuilder {
   };
 
   hover = (selector: string, causesNavigation: boolean) => {
-    this.pushCodes(`cy.get('${selector}').trigger('mouseover');`);
+    // this.pushCodes(`cy.get('${selector}').trigger('mouseover');`);
     return this;
   };
 
@@ -691,17 +691,17 @@ export class CypressScriptBuilder extends ScriptBuilder {
   };
 
   type = (selector: string, value: string, causesNavigation: boolean) => {
-    this.pushCodes(`cy.get('${selector}').type(${JSON.stringify(value)});`);
+    // this.pushCodes(`cy.get('${selector}').type(${JSON.stringify(value)});`);
     return this;
   };
 
   select = (selector: string, option: string, causesNavigation: boolean) => {
-    this.pushCodes(`cy.get('${selector}').select('${option}');`);
+    // this.pushCodes(`cy.get('${selector}').select('${option}');`);
     return this;
   };
 
   keydown = (selector: string, key: string, causesNavigation: boolean) => {
-    this.pushCodes(`cy.get('${selector}').type('{${key}}');`);
+    // this.pushCodes(`cy.get('${selector}').type('{${key}}');`);
     return this;
   };
 
@@ -711,21 +711,21 @@ export class CypressScriptBuilder extends ScriptBuilder {
     pageXOffset?: number,
     pageYOffset?: number
   ) => {
-    this.pushCodes(
-      `cy.scrollTo(${Math.floor(pageXOffset ?? 0)}, ${Math.floor(
-        pageYOffset ?? 0
-      )});`
-    );
+    // this.pushCodes(
+    //   `cy.scrollTo(${Math.floor(pageXOffset ?? 0)}, ${Math.floor(
+    //     pageYOffset ?? 0
+    //   )});`
+    // );
     return this;
   };
 
   fullScreenshot = () => {
-    this.pushCodes(`cy.screenshot();`);
+    // this.pushCodes(`cy.screenshot();`);
     return this;
   };
 
   awaitText = (text: string) => {
-    this.pushCodes(`cy.contains('${text}');`);
+    // this.pushCodes(`cy.contains('${text}');`);
     return this;
   };
 
@@ -736,7 +736,7 @@ export class CypressScriptBuilder extends ScriptBuilder {
     targetY: number
   ) => {
     // TODO -> IMPLEMENT ME
-    this.pushCodes('');
+    // this.pushCodes('');
     return this;
   };
 
@@ -744,7 +744,30 @@ export class CypressScriptBuilder extends ScriptBuilder {
     // return `it('Written with DeploySentinel Recorder', () => {${this.codes.join(
     //   ''
     // )}});`;
-    return `nodes:${this.codes.join('')}\nedges: {}`;
+
+    // from this.codes, split to pairs of 2
+    // For example [1,2,3,4] -> [[1,2], [2,3], [3,4]]
+    const pairs = this.codes
+      .slice(0, -1)
+      .map((node, index) => [node, this.codes[index + 1]]);
+
+    // For each pair, create an edge
+    const edges = pairs.map(([node, nextNode]) => {
+      const id = uuid();
+      const sourceId = node.split(':')[0].trim();
+      const targetId = nextNode.split(':')[0].trim();
+      return `
+  ${id}:
+    id: ${id}
+    source: ${sourceId}
+    sourceHandle: null
+    target: ${targetId}
+    targetHandle: null
+    type: customEdge
+    `;
+    });
+
+    return `nodes:${this.codes.join('')}\nedges: ${edges.join('\n')}`;
   };
 }
 
