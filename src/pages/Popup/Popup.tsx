@@ -208,8 +208,7 @@ const Popup = () => {
   return (
     <>
       <style>{PopupStyle}</style>
-      <App />
-
+      <h1> Baby I need your love tonight</h1>
       <div className="Popup" style={{ background: '#080A0B' }}>
         {activePage === 'recording' && (
           <>
