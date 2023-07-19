@@ -2,6 +2,7 @@
   "manifest_version": 3,
   "name": "DeploySentinel Recorder",
   "description": "Record browser interactions to auto generate Cypress, Playwright and Puppeteer test scripts.",
+  "options_page": "options.html",
   "background": { "service_worker": "background.bundle.js" },
   "action": {
     "default_popup": "popup.html",
@@ -16,7 +17,11 @@
     "scripting",
     "storage",
     "contextMenus",
-    "webNavigation"
+    "webNavigation",
+    "tabs",
+    "clipboardWrite",
+    "debugger",
+    "management"
   ],
   "host_permissions": ["<all_urls>"],
   "externally_connectable": {
@@ -30,6 +35,26 @@
     {
       "matches": ["http://localhost/*"],
       "js": ["bridge.bundle.js"]
+    },
+    {
+      "matches": ["http://*/*", "https://*/*", "<all_urls>"],
+      "js": ["contentScript.bundle.js"],
+      "css": ["content.styles.css"]
     }
-  ]
+  ],
+  "devtools_page": "devtools.html",
+  "web_accessible_resources": [
+    {
+      "resources": ["content.styles.css", "icon-128.png", "icon-34.png"],
+      "matches": []
+    }
+  ],
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Y",
+        "mac": "Command+Shift+Y"
+      }
+    }
+  }
 }

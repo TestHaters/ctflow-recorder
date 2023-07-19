@@ -32,6 +32,8 @@ import { ActionsMode, ScriptType } from '../types';
 import PopupStyle from './Popup.css';
 
 import { onPageView, onNewRecording } from './analytics';
+import App from '../../common/App';
+
 onPageView('/popup');
 
 function LastStepPanel({
@@ -206,6 +208,8 @@ const Popup = () => {
   return (
     <>
       <style>{PopupStyle}</style>
+      <App />
+
       <div className="Popup" style={{ background: '#080A0B' }}>
         {activePage === 'recording' && (
           <>

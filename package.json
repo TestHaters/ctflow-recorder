@@ -11,7 +11,7 @@
     "bundle-source": "zip source.zip -r ./* -x ./node_modules/\\* -x .git/\\* -x .vscode/\\* -x \\*.log",
     "test": "jest --coverage",
     "prepare": "husky install",
-    "start": "node utils/webserver.js"
+    "start": "MANIFEST_VERSION=3 node utils/webserver.js"
   },
   "dependencies": {
     "@babel/helper-environment-visitor": "^7.18.9",
@@ -21,7 +21,7 @@
     "@fortawesome/react-fontawesome": "^0.1.15",
     "@hot-loader/react-dom": "^17.0.1",
     "@jridgewell/gen-mapping": "^0.3.2",
-    "@types/chrome": "^0.0.154",
+    "@types/chrome": "^0.0.202",
     "@types/firefox": "^0.0.31",
     "@types/lodash.debounce": "^4.0.6",
     "@types/react": "^17.0.2",
