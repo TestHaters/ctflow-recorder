@@ -32,7 +32,8 @@ import { ActionsMode, ScriptType } from '../types';
 import PopupStyle from './Popup.css';
 
 import { onPageView, onNewRecording } from './analytics';
-import App from '../../common/App';
+
+import CTFlowAI from '../../common/CTFlowAI';
 
 onPageView('/popup');
 
@@ -129,6 +130,21 @@ function LastStepPanel({
   );
 }
 
+// const CTFlowAI = ({
+//   actions,
+//   onBack,
+// }: {
+//   actions: Action[];
+//   onBack: () => void;
+// }) => {
+
+//   return (
+//     <div>
+//       ctflow ai panel
+//     </div>
+//   );
+// };
+
 const Popup = () => {
   const [preferredLibrary, setPreferredLibrary] = usePreferredLibrary();
 
@@ -137,6 +153,8 @@ const Popup = () => {
   const [currentTabId, setCurrentTabId] = useState<number | null>(null);
 
   const [isShowingLastTest, setIsShowingLastTest] = useState<boolean>(false);
+
+  const [isShowingCTFlowAI, setIsShowingCTFlowAI] = useState<boolean>(false);
 
   const [showBetaCTA, setShowBetaCTA] = useState<boolean>(
     localStorage.getItem('showBetaCta') !== 'false'
@@ -201,10 +219,13 @@ const Popup = () => {
       ? 'recording'
       : isShowingLastTest
       ? 'lastTest'
+      : isShowingCTFlowAI
+      ? 'ctflowai'
       : 'home';
 
   const isRecordingCurrentTab = currentTabId === recordingTabId;
 
+  console.log('Hello Mommy');
   return (
     <>
       <style>{PopupStyle}</style>
@@ -272,6 +293,18 @@ const Popup = () => {
                   View Last Recording
                 </span>
               </div>
+
+              <div className="my-8">
+                <span
+                  className="link-button"
+                  onClick={() => {
+                    setIsShowingCTFlowAI(true);
+                  }}
+                  data-testid="view-ctflow-ai"
+                >
+                  CTFlow AI
+                </span>
+              </div>
               {showBetaCTA &&
                 (preferredLibrary === ScriptType.Cypress ||
                   preferredLibrary == null) && (
@@ -310,6 +343,15 @@ const Popup = () => {
                 )}
             </div>
           </>
+        )}
+        {activePage === 'ctflowai' && (
+          <CTFlowAI
+            actions={actions}
+            onBack={() => {
+              // setIsShowingCTFlowAI(false);
+              // No callback shit
+            }}
+          />
         )}
         {activePage === 'lastTest' && (
           <LastStepPanel
