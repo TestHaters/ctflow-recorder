@@ -16,42 +16,43 @@ const CTFlowAI = ({
   onBack: () => void;
 }) => {
   // const openAIKey = useAppState((state) => state.settings.openAIKey);
-  const openAIKey = true;
+  const openAIKey = false;
 
   // console.log("render ctflow ai from panel")
-  return (
-    <div>
-      <h1> CTFLOW AI</h1>
-      <TaskUI />
-    </div>
-  );
   // return (
-  //   <ChakraProvider>
-  //     <Box p="8" fontSize="lg" w="full">
-  //       <HStack mb={4} alignItems="center">
-  //         <img
-  //           src={logo}
-  //           width={32}
-  //           height={32}
-  //           className="App-logo"
-  //           alt="logo"
-  //         />
-
-  //         <Heading as="h1" size="lg" flex={1}>
-  //           CTFlow AI 11
-  //         </Heading>
-  //         <h1>
-  //           Common/App.ts: I need your love tonight, I want to hold you tight
-  //         </h1>
-  //         <HStack spacing={2}>
-  //           <ModelDropdown />
-  //           <OptionsDropdown />
-  //         </HStack>
-  //       </HStack>
-  //       {openAIKey ? <TaskUI /> : <SetAPIKey />}
-  //     </Box>
-  //   </ChakraProvider>
+  //   <div>
+  //     <h1> CTFLOW AI</h1>
+  //     <TaskUI />
+  //   </div>
   // );
+  return (
+    <ChakraProvider>
+      <Box p="8" fontSize="lg" w="full">
+        <HStack mb={4} alignItems="center">
+          <img
+            src={logo}
+            width={32}
+            height={32}
+            className="App-logo"
+            alt="logo"
+          />
+
+          <Heading as="h1" size="lg" flex={1}>
+            CTFlow AI
+          </Heading>
+          <h1>
+            CTFLOW AI Common/App.ts: I need your love tonight, I want to hold
+            you tight
+          </h1>
+          <HStack spacing={2}>
+            <ModelDropdown />
+            <OptionsDropdown />
+          </HStack>
+        </HStack>
+        {openAIKey ? <TaskUI /> : <SetAPIKey />}
+      </Box>
+    </ChakraProvider>
+  );
 };
 
 export default CTFlowAI;

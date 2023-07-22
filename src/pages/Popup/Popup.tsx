@@ -33,7 +33,7 @@ import PopupStyle from './Popup.css';
 
 import { onPageView, onNewRecording } from './analytics';
 
-import CTFlowAI from '../../common/CTFlowAI';
+// import CTFlowAI from '../../common/CTFlowAI';
 
 onPageView('/popup');
 
@@ -129,21 +129,6 @@ function LastStepPanel({
     </div>
   );
 }
-
-// const CTFlowAI = ({
-//   actions,
-//   onBack,
-// }: {
-//   actions: Action[];
-//   onBack: () => void;
-// }) => {
-
-//   return (
-//     <div>
-//       ctflow ai panel
-//     </div>
-//   );
-// };
 
 const Popup = () => {
   const [preferredLibrary, setPreferredLibrary] = usePreferredLibrary();
@@ -345,13 +330,14 @@ const Popup = () => {
           </>
         )}
         {activePage === 'ctflowai' && (
-          <CTFlowAI
-            actions={actions}
-            onBack={() => {
-              // setIsShowingCTFlowAI(false);
-              // No callback shit
-            }}
-          />
+          // <CTFlowAI
+          //   actions={actions}
+          //   onBack={() => {
+          //     setIsShowingCTFlowAI(false);
+          //     // No callback shit
+          //   }}
+          // />
+          <div> CTFLOW AI </div>
         )}
         {activePage === 'lastTest' && (
           <LastStepPanel

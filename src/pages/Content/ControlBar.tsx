@@ -33,6 +33,8 @@ import {
 
 import ControlBarStyle from './ControlBar.css';
 import { endRecording } from '../Common/endRecording';
+import CTFlowAI from '../../common/CTFlowAI';
+import { set } from 'lodash';
 
 const ActionButton = ({
   onClick,
@@ -59,6 +61,25 @@ const ActionButton = ({
         {children}
       </div>
       <div style={{ fontSize: 12, marginTop: 4 }}>{label}</div>
+    </div>
+  </div>
+);
+
+const AIPanel = () => (
+  <div className="AIPanel">
+    <h1> AI PANEL </h1>
+    <div>
+      <div
+        style={{
+          height: '400px',
+          width: '100%',
+          position: 'relative',
+          margin: '0 auto',
+          marginBottom: '0.5em',
+        }}
+      >
+        <CTFlowAI actions={[]} onBack={() => {}} />
+      </div>
     </div>
   </div>
 );
@@ -125,6 +146,9 @@ export default function ControlBar({ onExit }: { onExit: () => void }) {
   const [actions, setActions] = useState<Action[]>([]);
 
   const [showAllActions, setShowAllActions] = useState<boolean>(false);
+
+  const [showCTFlowAI, setShowCTFlowAI] = useState<boolean>(true);
+
   const [showActionsMode, setShowActionsMode] = useState<ActionsMode>(
     ActionsMode.Code
   );
@@ -145,6 +169,9 @@ export default function ControlBar({ onExit }: { onExit: () => void }) {
 
     // Show Code
     setShowAllActions(true);
+
+    // show AI Panel
+    setShowCTFlowAI(false);
 
     // Clear out highlighter
     document.removeEventListener('mousemove', handleMouseMoveRef.current, true);
@@ -251,7 +278,7 @@ export default function ControlBar({ onExit }: { onExit: () => void }) {
                 bottom: 35,
               }
             : { top: 35 }),
-          height: showAllActions ? 330 : 100,
+          height: showAllActions || showCTFlowAI ? 330 : 100,
         }}
       >
         {isFinished ? (
@@ -274,7 +301,10 @@ export default function ControlBar({ onExit }: { onExit: () => void }) {
               <div className="d-flex">
                 <div
                   className="text-sm link-button"
-                  onClick={() => setShowAllActions(!showAllActions)}
+                  onClick={() => {
+                    setShowCTFlowAI(showAllActions);
+                    setShowAllActions(!showAllActions);
+                  }}
                 >
                   {showAllActions ? 'Collapse' : 'See'} Recording Steps{' '}
                   <FontAwesomeIcon
@@ -319,6 +349,24 @@ export default function ControlBar({ onExit }: { onExit: () => void }) {
                     <RenderActionText action={lastAction} />
                   )}
                 </div>
+                <div
+                  className="text-sm link-button"
+                  data-testid={
+                    showCTFlowAI ? 'show-less-actions' : 'show-more-actions'
+                  }
+                  onClick={() => {
+                    setShowAllActions(showCTFlowAI);
+                    setShowCTFlowAI(!showCTFlowAI);
+                    console.log('heck me');
+                    console.log(showCTFlowAI);
+                  }}
+                >
+                  {showCTFlowAI ? 'Collapse AI Panel' : 'Expand AI Panel'}{' '}
+                  <FontAwesomeIcon
+                    icon={showCTFlowAI ? faChevronUp : faChevronDown}
+                  />
+                </div>
+
                 <div
                   className="text-sm link-button"
                   data-testid={
@@ -418,6 +466,13 @@ export default function ControlBar({ onExit }: { onExit: () => void }) {
             {showActionsMode === ActionsMode.Actions && (
               <ActionList actions={actions} />
             )}
+          </div>
+        )}
+        ,
+        {showCTFlowAI && (
+          <div className="actions-wrapper p-4" style={{}}>
+            <h1> PUCK ME HARD </h1>
+            <AIPanel />
           </div>
         )}
       </div>
