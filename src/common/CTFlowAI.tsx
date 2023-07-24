@@ -1,6 +1,6 @@
 import { Box, ChakraProvider, Heading, HStack } from '@chakra-ui/react';
 import React from 'react';
-// import { useAppState } from '../state/store';
+import { useAppState } from '../state/store';
 import ModelDropdown from './ModelDropdown';
 import SetAPIKey from './SetAPIKey';
 import TaskUI from './TaskUI';
@@ -15,8 +15,8 @@ const CTFlowAI = ({
   actions: Action[];
   onBack: () => void;
 }) => {
-  // const openAIKey = useAppState((state) => state.settings.openAIKey);
-  const openAIKey = false;
+  const openAIKey = useAppState((state) => state.settings.openAIKey);
+  // const openAIKey = false;
 
   // console.log("render ctflow ai from panel")
   // return (
@@ -27,23 +27,8 @@ const CTFlowAI = ({
   // );
   return (
     <ChakraProvider>
-      <Box p="8" fontSize="lg" w="full">
+      <Box p="8" fontSize="lg" w="full" h="1000px">
         <HStack mb={4} alignItems="center">
-          <img
-            src={logo}
-            width={32}
-            height={32}
-            className="App-logo"
-            alt="logo"
-          />
-
-          <Heading as="h1" size="lg" flex={1}>
-            CTFlow AI
-          </Heading>
-          <h1>
-            CTFLOW AI Common/App.ts: I need your love tonight, I want to hold
-            you tight
-          </h1>
           <HStack spacing={2}>
             <ModelDropdown />
             <OptionsDropdown />

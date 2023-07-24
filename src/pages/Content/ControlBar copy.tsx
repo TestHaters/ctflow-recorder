@@ -35,10 +35,6 @@ import ControlBarStyle from './ControlBar.css';
 import { endRecording } from '../Common/endRecording';
 import CTFlowAI from '../../common/CTFlowAI';
 import { set } from 'lodash';
-import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
-
-// import ReactTabStyle from 'react-tabs/style/react-tabs.css';
-import CustomReactTabStyle from './CustomReactTabs.css';
 
 const ActionButton = ({
   onClick,
@@ -75,6 +71,7 @@ const AIPanel = () => (
     <div>
       <div
         style={{
+          height: '400px',
           width: '100%',
           position: 'relative',
           margin: '0 auto',
@@ -269,123 +266,215 @@ export default function ControlBar({ onExit }: { onExit: () => void }) {
   return (
     <>
       <style>{ControlBarStyle}</style>
-      <style>{CustomReactTabStyle}</style>
-
+      {rect != null && rect.top != null && (
+        <Highlighter rect={rect} displayedSelector={displayedSelector ?? ''} />
+      )}
       <div
         className="ControlBar rr-ignore"
         id="overlay-controls"
         style={{
           ...(barPosition === BarPosition.Bottom
-            ? { bottom: 35 }
+            ? {
+                bottom: 35,
+              }
             : { top: 35 }),
-          // height: (showAllActions || showCTFlowAI) ? 330 : 100,
-          height: 330,
+          height: showAllActions || showCTFlowAI ? 330 : 100,
         }}
       >
-        <Tabs>
-          <TabPanel>
-            <h3> Recorder Tab </h3>
-            <div className="actions-wrapper p-4" style={{}}>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <div className="mb-4">
-                  <span
-                    className="text-sm link-button mr-2"
-                    data-testid={`show-${
+        {showAllActions && (
+          <div className="actions-wrapper p-4" style={{}}>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <div className="mb-4">
+                <span
+                  className="text-sm link-button mr-2"
+                  data-testid={`show-${
+                    showActionsMode === ActionsMode.Actions
+                      ? ActionsMode.Code
+                      : ActionsMode.Actions
+                  }`}
+                  onClick={() => {
+                    setShowActionsMode(
                       showActionsMode === ActionsMode.Actions
                         ? ActionsMode.Code
                         : ActionsMode.Actions
+                    );
+                  }}
+                >
+                  Show{' '}
+                  {showActionsMode === ActionsMode.Actions ? 'Code' : 'Actions'}
+                </span>
+                {!isFinished && (
+                  <span
+                    className={`text-sm link-button mr-2 ${
+                      screenshotConfirm ? 'text-green' : ''
                     }`}
+                    data-testid="record-screenshot"
                     onClick={() => {
-                      setShowActionsMode(
-                        showActionsMode === ActionsMode.Actions
-                          ? ActionsMode.Code
-                          : ActionsMode.Actions
-                      );
+                      recorderRef.current?.onFullScreenshot();
+                      setScreenshotConfirm(true);
+                      setTimeout(() => {
+                        setScreenshotConfirm(false);
+                      }, 2000);
                     }}
                   >
-                    Show{' '}
-                    {showActionsMode === ActionsMode.Actions
-                      ? 'Code'
-                      : 'Actions'}
+                    <FontAwesomeIcon
+                      icon={screenshotConfirm ? faCheck : faCamera}
+                      size="sm"
+                    />{' '}
+                    Record Screenshot
                   </span>
-                  {!isFinished && (
-                    <span
-                      className={`text-sm link-button mr-2 ${
-                        screenshotConfirm ? 'text-green' : ''
-                      }`}
-                      data-testid="record-screenshot"
-                      onClick={() => {
-                        recorderRef.current?.onFullScreenshot();
-                        setScreenshotConfirm(true);
+                )}
+              </div>
+              <div>
+                {showActionsMode === ActionsMode.Code && (
+                  <>
+                    <ScriptTypeSelect
+                      value={displayedScriptType}
+                      onChange={setPreferredLibrary}
+                    />
+                    <CopyToClipboard
+                      text={genCode(actions, true, displayedScriptType)}
+                      onCopy={() => {
+                        setCopyCodeConfirm(true);
                         setTimeout(() => {
-                          setScreenshotConfirm(false);
+                          setCopyCodeConfirm(false);
                         }, 2000);
                       }}
                     >
-                      <FontAwesomeIcon
-                        icon={screenshotConfirm ? faCheck : faCamera}
-                        size="sm"
-                      />{' '}
-                      Record Screenshot
-                    </span>
-                  )}
-                </div>
-                <div>
-                  {showActionsMode === ActionsMode.Code && (
-                    <>
-                      <ScriptTypeSelect
-                        value={displayedScriptType}
-                        onChange={setPreferredLibrary}
-                      />
-                      <CopyToClipboard
-                        text={genCode(actions, true, displayedScriptType)}
-                        onCopy={() => {
-                          setCopyCodeConfirm(true);
-                          setTimeout(() => {
-                            setCopyCodeConfirm(false);
-                          }, 2000);
-                        }}
+                      <span
+                        className={`text-sm link-button ${
+                          copyCodeConfirm ? 'text-green' : ''
+                        }`}
                       >
-                        <span
-                          className={`text-sm link-button ${
-                            copyCodeConfirm ? 'text-green' : ''
-                          }`}
-                        >
-                          <FontAwesomeIcon
-                            icon={copyCodeConfirm ? faCheck : faCopy}
-                            size="sm"
-                          />{' '}
-                          Copy Code
-                        </span>
-                      </CopyToClipboard>
-                    </>
-                  )}
+                        <FontAwesomeIcon
+                          icon={copyCodeConfirm ? faCheck : faCopy}
+                          size="sm"
+                        />{' '}
+                        Copy Code
+                      </span>
+                    </CopyToClipboard>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {showActionsMode === ActionsMode.Code && (
+              <CodeGen actions={actions} library={displayedScriptType} />
+            )}
+            {showActionsMode === ActionsMode.Actions && (
+              <ActionList actions={actions} />
+            )}
+          </div>
+        )}
+        {showCTFlowAI && (
+          <div className="actions-wrapper p-4" style={{}}>
+            <h1> PUCK ME HARD </h1>
+            <AIPanel />
+          </div>
+        )}
+
+        {isFinished ? (
+          <div className="p-4">
+            <div className="d-flex justify-between mb-2">
+              <div className="text-xl">
+                <span className="mr-2" data-testid="recording-finished">
+                  Recording Finished!
+                </span>
+                🎉
+              </div>
+              <div className="text-button" onClick={() => onClose()}>
+                <FontAwesomeIcon icon={faTimes} size="sm" />
+              </div>
+            </div>
+            <div className="d-flex justify-between items-center">
+              <div className="text-sm text-grey">
+                Below is the generated code for this recording.
+              </div>
+              <div className="d-flex">
+                <div
+                  className="text-sm link-button"
+                  onClick={() => {
+                    setShowCTFlowAI(showAllActions);
+                    setShowAllActions(!showAllActions);
+                  }}
+                >
+                  {showAllActions ? 'Collapse' : 'See'} Recording Steps{' '}
+                  <FontAwesomeIcon
+                    icon={showAllActions ? faChevronUp : faChevronDown}
+                  />
                 </div>
               </div>
-
-              {showActionsMode === ActionsMode.Code && (
-                <CodeGen actions={actions} library={displayedScriptType} />
-              )}
-              {showActionsMode === ActionsMode.Actions && (
-                <ActionList actions={actions} />
-              )}
             </div>
-          </TabPanel>
-          <TabPanel>
-            <h3> AI TAB </h3>
-            {showCTFlowAI && (
-              <div className="actions-wrapper p-4" style={{}}>
-                <h1> PUCK ME HARD </h1>
-                <AIPanel />
+          </div>
+        ) : (
+          <div className="d-flex items-center">
+            <ActionButton
+              label="End Rec"
+              onClick={() => onEndRecording()}
+              testId="end-test"
+            >
+              <FontAwesomeIcon icon={faCheckCircle} size="2x" />
+            </ActionButton>
+            <div className="w-100 p-4">
+              <div className="d-flex justify-between" style={{ fontSize: 14 }}>
+                <div className="text-grey">Last Action</div>
+                <div
+                  className="text-grey text-sm text-button"
+                  onClick={() =>
+                    setBarPosition(
+                      barPosition === BarPosition.Bottom
+                        ? BarPosition.Top
+                        : BarPosition.Bottom
+                    )
+                  }
+                >
+                  Move Overlay to{' '}
+                  {barPosition === BarPosition.Bottom ? 'Top' : 'Bottom'}
+                </div>
               </div>
-            )}
-          </TabPanel>
+              <div
+                className="d-flex justify-between items-end"
+                style={{ marginTop: 12 }}
+              >
+                <div className="last-action-preview">
+                  {lastAction != null && (
+                    <RenderActionText action={lastAction} />
+                  )}
+                </div>
+                <div
+                  className="text-sm link-button"
+                  data-testid={
+                    showCTFlowAI ? 'show-less-actions' : 'show-more-actions'
+                  }
+                  onClick={() => {
+                    setShowAllActions(showCTFlowAI);
+                    setShowCTFlowAI(!showCTFlowAI);
+                    console.log('heck me');
+                    console.log(showCTFlowAI);
+                  }}
+                >
+                  {showCTFlowAI ? 'Collapse AI Panel' : 'Expand AI Panel'}{' '}
+                  <FontAwesomeIcon
+                    icon={showCTFlowAI ? faChevronUp : faChevronDown}
+                  />
+                </div>
 
-          <TabList>
-            <Tab id="ctflow-recorder-tab-list-btn"> 🎥 Recorder</Tab>
-            <Tab> 🤖 CTFlow AI</Tab>
-          </TabList>
-        </Tabs>
+                <div
+                  className="text-sm link-button"
+                  data-testid={
+                    showAllActions ? 'show-less-actions' : 'show-more-actions'
+                  }
+                  onClick={() => setShowAllActions(!showAllActions)}
+                >
+                  {showAllActions ? 'Collapse Overlay' : 'Expand Overlay'}{' '}
+                  <FontAwesomeIcon
+                    icon={showAllActions ? faChevronUp : faChevronDown}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

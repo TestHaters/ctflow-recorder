@@ -72,6 +72,8 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
       });
 
       try {
+        console.log('CURRENT TASK: ');
+        console.log(get().currentTask);
         const activeTab = (
           await chrome.tabs.query({ active: true, currentWindow: true })
         )[0];
@@ -82,13 +84,17 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
           state.currentTask.tabId = tabId;
         });
 
+        console.log('ATTACH DEBUGGER');
+
         await attachDebugger(tabId);
+        console.log('DISABLE INCOMPETIBLE EXTENSIONS');
         await disableIncompatibleExtensions();
 
         // eslint-disable-next-line no-constant-condition
         while (true) {
           if (wasStopped()) break;
 
+          console.log('pulling dom');
           setActionStatus('pulling-dom');
           console.log('TaxyAI: Pulling DOM');
           const pageDOM = await getSimplifiedDom();

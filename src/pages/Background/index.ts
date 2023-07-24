@@ -12,6 +12,9 @@ import {
 const HOVER_CTX_MENU_ID = 'deploysentinel-menu-id';
 const AWAIT_TEXT_CTX_MENU_ID = 'deploysentinel-menu-await-text-id';
 
+console.log('This is the background page.');
+console.log('Put the background scripts here.');
+
 async function recordNavigationEvent(
   url: string,
   transitionType: string,

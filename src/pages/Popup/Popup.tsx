@@ -33,7 +33,7 @@ import PopupStyle from './Popup.css';
 
 import { onPageView, onNewRecording } from './analytics';
 
-// import CTFlowAI from '../../common/CTFlowAI';
+import CTFlowAI from '../../common/CTFlowAI';
 
 onPageView('/popup');
 
@@ -210,7 +210,6 @@ const Popup = () => {
 
   const isRecordingCurrentTab = currentTabId === recordingTabId;
 
-  console.log('Hello Mommy');
   return (
     <>
       <style>{PopupStyle}</style>
@@ -330,14 +329,13 @@ const Popup = () => {
           </>
         )}
         {activePage === 'ctflowai' && (
-          // <CTFlowAI
-          //   actions={actions}
-          //   onBack={() => {
-          //     setIsShowingCTFlowAI(false);
-          //     // No callback shit
-          //   }}
-          // />
-          <div> CTFLOW AI </div>
+          <CTFlowAI
+            actions={actions}
+            onBack={() => {
+              setIsShowingCTFlowAI(false);
+              // No callback shit
+            }}
+          />
         )}
         {activePage === 'lastTest' && (
           <LastStepPanel

@@ -4,6 +4,7 @@ import ControlBar from './ControlBar';
 
 import FaStyle from '@fortawesome/fontawesome-svg-core/styles.css';
 import CommonStyle from '../Common/styles.css';
+import { watchForRPCRequests } from '../../helpers/pageRPC';
 
 const target = document.body.appendChild(document.createElement('DIV'));
 
@@ -38,6 +39,11 @@ if (window.__DEPLOYSENTINEL_SCRIPT == null) {
   if (window.wrappedJSObject != null) {
     window.wrappedJSObject.__DEPLOYSENTINEL_SCRIPT = true;
   }
+
+  console.log(target);
+  console.log('WatchForRPCRequests..');
+
+  watchForRPCRequests();
 
   target.attachShadow({ mode: 'open' });
   render(

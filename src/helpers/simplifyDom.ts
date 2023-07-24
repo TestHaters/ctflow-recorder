@@ -6,6 +6,8 @@ import { truthyFilter } from './utils';
 export async function getSimplifiedDom() {
   console.log('TaxyAI: getSimplifiedDom');
   const fullDom = await callRPC('getAnnotatedDOM', [], 3);
+  console.log('fullDom', fullDom);
+
   if (!fullDom) return null;
 
   const dom = new DOMParser().parseFromString(fullDom, 'text/html');

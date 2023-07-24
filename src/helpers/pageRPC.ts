@@ -22,8 +22,9 @@ type MethodRT<T extends MethodName> = ReturnType<RPCMethods[T]>;
 export const callRPC = async <T extends MethodName>(
   type: keyof typeof rpcMethods,
   payload?: Payload<T>,
-  maxTries = 1
+  maxTries = 10
 ): Promise<MethodRT<T>> => {
+  console.log('Start callRPC');
   let queryOptions = { active: true, currentWindow: true };
   let activeTab = (await chrome.tabs.query(queryOptions))[0];
 
@@ -32,18 +33,23 @@ export const callRPC = async <T extends MethodName>(
     queryOptions = { active: false, currentWindow: true };
     activeTab = (await chrome.tabs.query(queryOptions))[0];
   }
+  console.log('more detail');
 
   if (!activeTab?.id) throw new Error('No active tab found');
 
   let err: any;
   for (let i = 0; i < maxTries; i++) {
     try {
+      console.log('tried to send message to content script', i);
       const response = await chrome.tabs.sendMessage(activeTab.id, {
         type,
         payload: payload || [],
       });
+
+      console.log('response', response);
       return response;
     } catch (e) {
+      console.log('RPC error', e);
       if (i === maxTries - 1) {
         // Last try, throw the error
         err = e;
