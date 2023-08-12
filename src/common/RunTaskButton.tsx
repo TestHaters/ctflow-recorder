@@ -17,14 +17,14 @@ export default function RunTaskButton(props: { runTask: () => void }) {
   console.log('HEY FROM RUN TASK BUTTON');
 
   if (chrome.debugger !== undefined) {
-    console.log('add listener to background - background only');
+    console.log('add listener to RUNT TASK BUTTON only');
     chrome.runtime.onMessage.addListener(async function (
       request,
       sender,
       sendResponse
     ) {
       console.log(
-        'RUN TASK BTN:Message received from page background index.ts 123',
+        'RUN TASK BTN:Message received from RUNT TASK BUTTON index.ts',
         request
       );
       onRunTask();
