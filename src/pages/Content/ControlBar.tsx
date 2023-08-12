@@ -266,6 +266,11 @@ export default function ControlBar({ onExit }: { onExit: () => void }) {
     return <> </>;
   }
 
+  const onTestMessageClick = () => {
+    console.log('trigger: On test message click: click me');
+    chrome.runtime.sendMessage({ from: 'control bar' });
+  };
+
   return (
     <>
       <style>{ControlBarStyle}</style>

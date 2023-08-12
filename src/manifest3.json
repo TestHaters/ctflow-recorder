@@ -21,7 +21,8 @@
     "tabs",
     "clipboardWrite",
     "debugger",
-    "management"
+    "management",
+    "nativeMessaging"
   ],
   "host_permissions": ["<all_urls>"],
   "externally_connectable": {

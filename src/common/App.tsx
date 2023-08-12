@@ -10,7 +10,8 @@ import logo from '../assets/img/icon-128.png';
 const App = () => {
   const openAIKey = useAppState((state) => state.settings.openAIKey);
 
-  return <h1> CTFLOW AI </h1>;
+  console.log('render ctflow ai from panel', openAIKey);
+  // return <h1> CTFLOW AI </h1>;
   return (
     <ChakraProvider>
       <Box p="8" fontSize="lg" w="full">

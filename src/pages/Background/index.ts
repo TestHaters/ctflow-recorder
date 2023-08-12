@@ -9,6 +9,8 @@ import {
   executeCleanUp,
 } from '../Common/utils';
 
+// import { useAppState } from "../../state/store";
+
 const HOVER_CTX_MENU_ID = 'deploysentinel-menu-id';
 const AWAIT_TEXT_CTX_MENU_ID = 'deploysentinel-menu-await-text-id';
 
@@ -67,47 +69,72 @@ async function onNavEvent(
   );
 }
 
-chrome.runtime.onMessage.addListener(async function (
-  request,
-  sender,
-  sendResponse
-) {
-  if (request.type === 'start-recording') {
-    const testEditorTabId = sender.tab?.id;
+function startListener() {
+  console.log(
+    'Index: 803: add chrome runtime listener in background index.ts 123'
+  );
 
-    const newUrl = request.url;
-    const newTab = await createTab(newUrl);
-    const tabId = newTab.id;
+  chrome.runtime.onMessage.addListener(async function (
+    request,
+    sender,
+    sendResponse
+  ) {
+    console.log(
+      'Index: Message received from page background index.ts 123',
+      request
+    );
 
-    if (tabId == null) {
-      throw new Error('New tab id not defined');
+    console.log(
+      'check request run time',
+      request?.source === 'control-bar' && request?.type === 'run-task'
+    );
+    // console.log(lastTriggerAITaskAt)
+
+    if (request?.source === 'control-bar' && request?.type === 'run-task') {
+      console.log('I SHould run task');
+      // setLastTriggerAITaskAt(Date.now());
+      // console.log("Last Trigger AI At", lastTriggerAITaskAt)
     }
 
-    setStartRecordingStorage(tabId, 0, newUrl, testEditorTabId);
-  } else if (request.type === 'forward-recording') {
-    // Focus the original deploysentinel webapp tab post-recording
-    chrome.tabs.update(request.tabId, { active: true });
+    if (request.type === 'start-recording') {
+      const testEditorTabId = sender.tab?.id;
 
-    chrome.tabs.sendMessage(request.tabId, {
-      type: 'playwright-test-recording',
-      code: request.code,
-      actions: request.actions,
-    });
-  } else if (request.type === 'cypress-trigger-start-recording') {
-    const tabId = sender.tab?.id;
+      const newUrl = request.url;
+      const newTab = await createTab(newUrl);
+      const tabId = newTab.id;
 
-    if (tabId == null) {
-      throw new Error('Cypress tab not defined');
+      if (tabId == null) {
+        throw new Error('New tab id not defined');
+      }
+
+      setStartRecordingStorage(tabId, 0, newUrl, testEditorTabId);
+    } else if (request.type === 'forward-recording') {
+      // Focus the original deploysentinel webapp tab post-recording
+      chrome.tabs.update(request.tabId, { active: true });
+
+      chrome.tabs.sendMessage(request.tabId, {
+        type: 'playwright-test-recording',
+        code: request.code,
+        actions: request.actions,
+      });
+    } else if (request.type === 'cypress-trigger-start-recording') {
+      const tabId = sender.tab?.id;
+
+      if (tabId == null) {
+        throw new Error('Cypress tab not defined');
+      }
+
+      const autFrame = await getCypressAutFrame(tabId);
+      const { url, frameId } = autFrame;
+
+      setStartRecordingStorage(tabId, frameId, url);
+      await executeCleanUp(tabId, frameId);
+      await executeScript(tabId, frameId, 'contentScript.bundle.js');
     }
+  });
+}
 
-    const autFrame = await getCypressAutFrame(tabId);
-    const { url, frameId } = autFrame;
-
-    setStartRecordingStorage(tabId, frameId, url);
-    await executeCleanUp(tabId, frameId);
-    await executeScript(tabId, frameId, 'contentScript.bundle.js');
-  }
-});
+startListener();
 
 // Set recording as ended when the recording tab is closed
 chrome.tabs.onRemoved.addListener(async (tabId) => {

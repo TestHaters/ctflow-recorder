@@ -1,5 +1,5 @@
 import { Button, HStack, Icon } from '@chakra-ui/react';
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useAppState } from '../state/store';
 import { BsPlayFill, BsStopFill } from 'react-icons/bs';
 
@@ -10,10 +10,52 @@ export default function RunTaskButton(props: { runTask: () => void }) {
     interruptTask: state.currentTask.actions.interrupt,
   }));
 
+  const [lastTriggerAITaskAt, setLastTriggerAITaskAt] =
+    React.useState<number>();
+  const onRunTask = props.runTask;
+
+  console.log('HEY FROM RUN TASK BUTTON');
+
+  if (chrome.debugger !== undefined) {
+    console.log('add listener to background - background only');
+    chrome.runtime.onMessage.addListener(async function (
+      request,
+      sender,
+      sendResponse
+    ) {
+      console.log(
+        'RUN TASK BTN:Message received from page background index.ts 123',
+        request
+      );
+      onRunTask();
+      // const [lastTriggerAITaskAt, setLastTriggerAITaskAt] = React.useState<number>();
+    });
+  }
+
+  React.useEffect(() => {
+    if (lastTriggerAITaskAt === undefined) {
+      return;
+    }
+
+    console.log(lastTriggerAITaskAt, 'RUN TASK BUTTON - CHANGE AND TRIGGER');
+    console.log('chrome.debugger', chrome.debugger);
+
+    if (chrome.debugger === undefined) {
+      console.log('trigger chrome runtime message');
+      chrome.runtime.sendMessage({
+        source: 'control-bar',
+        type: 'run-task',
+      });
+    } else if (lastTriggerAITaskAt) {
+      onRunTask();
+    }
+  }, [lastTriggerAITaskAt]);
+
   let button = (
     <Button
       rightIcon={<Icon as={BsPlayFill} boxSize={6} />}
-      onClick={props.runTask}
+      //onClick={props.runTask}
+      onClick={() => setLastTriggerAITaskAt(Date.now())}
       colorScheme="green"
       disabled={state.taskState === 'running' || !state.instructions}
     >
