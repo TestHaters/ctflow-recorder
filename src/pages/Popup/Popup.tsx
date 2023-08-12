@@ -329,13 +329,13 @@ const Popup = () => {
           </>
         )}
         {/* show stflow anyway */}
-        {/* <CTFlowAI
-            actions={actions}
-            onBack={() => {
-              setIsShowingCTFlowAI(false);
-              // No callback shit
-            }}
-          />
+        <CTFlowAI
+          actions={actions}
+          onBack={() => {
+            setIsShowingCTFlowAI(false);
+            // No callback shit
+          }}
+        />
         {activePage === 'ctflowai' && (
           <CTFlowAI
             actions={actions}
@@ -344,7 +344,7 @@ const Popup = () => {
               // No callback shit
             }}
           />
-        )} */}
+        )}
         {activePage === 'lastTest' && (
           <LastStepPanel
             actions={actions}
