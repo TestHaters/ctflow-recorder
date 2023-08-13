@@ -16,6 +16,7 @@ const AWAIT_TEXT_CTX_MENU_ID = 'deploysentinel-menu-await-text-id';
 
 console.log('This is the background page.');
 console.log('Put the background scripts here.');
+let popupWindowId: number | null = null;
 
 async function recordNavigationEvent(
   url: string,
@@ -84,6 +85,8 @@ function startListener() {
       request
     );
 
+    let popupWindowId: number | null = null;
+
     console.log(
       'check request run time',
       request?.source === 'control-bar' && request?.type === 'run-task'
@@ -94,6 +97,30 @@ function startListener() {
       console.log('I SHould run task');
       // setLastTriggerAITaskAt(Date.now());
       // console.log("Last Trigger AI At", lastTriggerAITaskAt)
+
+      if (popupWindowId === null || popupWindowId === undefined) {
+        // Create a new popup window if it doesn't exist
+        chrome.windows.create(
+          {
+            url: chrome.runtime.getURL(
+              'popup.html?tabId=' + (sender?.tab?.id ?? '')
+            ),
+            // url: chrome.runtime.getURL("popup.html?tabId=123"),
+            type: 'popup',
+            width: 400,
+            height: 400,
+          },
+          (window) => {
+            if (window && window.id) {
+              // Check if window and window.id are both defined
+              popupWindowId = window.id;
+            }
+          }
+        );
+      } else {
+        // Focus the existing popup window
+        chrome.windows.update(popupWindowId, { focused: true });
+      }
     }
 
     if (request.type === 'start-recording') {

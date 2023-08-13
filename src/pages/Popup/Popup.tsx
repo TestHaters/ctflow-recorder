@@ -345,14 +345,14 @@ const Popup = () => {
             }}
           />
         )}
-        {activePage === 'lastTest' && (
-          <LastStepPanel
-            actions={actions}
-            onBack={() => {
-              setIsShowingLastTest(false);
-            }}
-          />
-        )}
+        {/* {(true || (activePage === 'lastTest')) && ( */}
+        <LastStepPanel
+          actions={actions}
+          onBack={() => {
+            setIsShowingLastTest(false);
+          }}
+        />
+        {/* )} */}
       </div>
     </>
   );

@@ -78,8 +78,14 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
           await chrome.tabs.query({ active: true, currentWindow: true })
         )[0];
 
-        if (!activeTab.id) throw new Error('No active tab found');
-        const tabId = activeTab.id;
+        const url = new URL(window.location.href);
+        let tabId = Number(url.searchParams.get('tabId'));
+
+        if (!tabId) {
+          if (!activeTab.id) throw new Error('No active tab found');
+          tabId = activeTab.id;
+        }
+
         set((state) => {
           state.currentTask.tabId = tabId;
         });

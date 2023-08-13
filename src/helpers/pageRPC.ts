@@ -25,23 +25,30 @@ export const callRPC = async <T extends MethodName>(
   maxTries = 10
 ): Promise<MethodRT<T>> => {
   console.log('Start callRPC');
-  let queryOptions = { active: true, currentWindow: true };
-  let activeTab = (await chrome.tabs.query(queryOptions))[0];
 
-  // If the active tab is a chrome-extension:// page, then we need to get some random other tab for testing
-  if (activeTab.url?.startsWith('chrome')) {
-    queryOptions = { active: false, currentWindow: true };
-    activeTab = (await chrome.tabs.query(queryOptions))[0];
+  const url = new URL(window.location.href);
+  let tabId = Number(url.searchParams.get('tabId'));
+
+  if (!tabId) {
+    let queryOptions = { active: true, currentWindow: true };
+    let activeTab = (await chrome.tabs.query(queryOptions))[0];
+
+    // If the active tab is a chrome-extension:// page, then we need to get some random other tab for testing
+    if (activeTab.url?.startsWith('chrome')) {
+      queryOptions = { active: false, currentWindow: true };
+      activeTab = (await chrome.tabs.query(queryOptions))[0];
+    }
+    console.log('more detail');
+
+    if (!activeTab?.id) throw new Error('callRPC: No active tab found');
+    tabId = activeTab.id;
   }
-  console.log('more detail');
-
-  if (!activeTab?.id) throw new Error('No active tab found');
 
   let err: any;
   for (let i = 0; i < maxTries; i++) {
     try {
       console.log('tried to send message to content script', i);
-      const response = await chrome.tabs.sendMessage(activeTab.id, {
+      const response = await chrome.tabs.sendMessage(tabId, {
         type,
         payload: payload || [],
       });
