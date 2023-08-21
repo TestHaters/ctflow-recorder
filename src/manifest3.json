@@ -14,6 +14,7 @@
   },
   "permissions": [
     "activeTab",
+    "chrome-extension://hdfkejecijfimippfbbbagmibkkcbdmo/*",
     "scripting",
     "storage",
     "contextMenus",

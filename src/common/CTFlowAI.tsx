@@ -8,13 +8,7 @@ import OptionsDropdown from './OptionsDropdown';
 import logo from '../assets/img/icon-128.png';
 import type { Action } from '../pages/types';
 
-const CTFlowAI = ({
-  actions,
-  onBack,
-}: {
-  actions: Action[];
-  onBack: () => void;
-}) => {
+const CTFlowAI = () => {
   const openAIKey = useAppState((state) => state.settings.openAIKey);
   // const openAIKey = false;
 
@@ -27,7 +21,7 @@ const CTFlowAI = ({
   // );
   return (
     <ChakraProvider>
-      <Box p="8" fontSize="lg" w="full" h="1000px">
+      <Box p="8" fontSize="lg" w="full" h="400px" overflowY="scroll">
         <HStack mb={4} alignItems="center">
           <HStack spacing={2}>
             <ModelDropdown />

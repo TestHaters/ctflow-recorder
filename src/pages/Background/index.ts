@@ -107,8 +107,8 @@ function startListener() {
             ),
             // url: chrome.runtime.getURL("popup.html?tabId=123"),
             type: 'popup',
-            width: 400,
-            height: 400,
+            width: 800,
+            height: 1000,
           },
           (window) => {
             if (window && window.id) {

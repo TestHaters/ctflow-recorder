@@ -81,7 +81,7 @@ const AIPanel = () => (
           marginBottom: '0.5em',
         }}
       >
-        <CTFlowAI actions={[]} onBack={() => {}} />
+        <CTFlowAI />
       </div>
     </div>
   </div>
