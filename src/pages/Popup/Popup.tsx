@@ -1,15 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { CopyToClipboard } from 'react-copy-to-clipboard';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  Button,
-  Heading,
-  Stack,
-  StackDivider,
-  Text,
-  Box,
-  Badge,
-} from '@chakra-ui/react';
+import { onPageView, onNewRecording } from './analytics';
+import CTFlowAI from '../../common/CTFlowAI';
+
+import { Heading, Text, Box, Badge } from '@chakra-ui/react';
 
 import {
   Accordion,
@@ -18,43 +11,11 @@ import {
   AccordionPanel,
   AccordionIcon,
 } from '@chakra-ui/react';
-import {
-  faSquare,
-  faCircle,
-  faInfoCircle,
-  faCopy,
-  faCheck,
-  faChevronLeft,
-} from '@fortawesome/free-solid-svg-icons';
-
-import Logo from '../Common/Logo';
-import CodeGen from '../Content/CodeGen';
-import ActionList from '../Content/ActionList';
-import { endRecording } from '../Common/endRecording';
-import { genCode } from '../builders';
-import {
-  setStartRecordingStorage,
-  getCurrentTab,
-  executeScript,
-  executeCleanUp,
-  isCypressBrowser,
-  getCypressAutFrame,
-} from '../Common/utils';
-import { usePreferredLibrary, useRecordingState } from '../Common/hooks';
-import ScriptTypeSelect from '../Common/ScriptTypeSelect';
-
-import type { Action } from '../types';
-import { ActionsMode, ScriptType } from '../types';
-
-import PopupStyle from './Popup.css';
-
-import { onPageView, onNewRecording } from './analytics';
-
-import CTFlowAI from '../../common/CTFlowAI';
 
 onPageView('/popup');
 
 import RecordingPanel from './RecordingPanel';
+import ConnectionPanel from './ConnectionPanel';
 
 const Popup = () => {
   return (
@@ -161,6 +122,7 @@ const Popup = () => {
             eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
             ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
             aliquip ex ea commodo consequat.
+            <ConnectionPanel />
           </AccordionPanel>
         </AccordionItem>
       </Accordion>
