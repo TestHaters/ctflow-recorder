@@ -58,6 +58,7 @@ export class ActionContext extends BaseAction {
     this.action = action;
     this.actionState = actionState;
     this.scriptType = scriptType;
+    console.log('INIT ACTION CONTEXT');
   }
 
   getType() {
@@ -76,7 +77,6 @@ export class ActionContext extends BaseAction {
     return this.action.inputType;
   }
 
-  // (FIXME: shouldn't expose action)
   getAction() {
     return this.action;
   }
@@ -148,6 +148,9 @@ export abstract class ScriptBuilder {
 
   protected readonly showComments: boolean;
 
+  // we use this variable to keep track which is current actionContext is used to generate code.
+  protected currentActionContextIndex: number;
+
   constructor(showComments: boolean) {
     this.codes = [];
     this.actionContexts = [];
@@ -212,6 +215,8 @@ export abstract class ScriptBuilder {
       // this.pushComments(`// ${actionDescription}`);
       // Don't push description
     }
+
+    console.log('build code: Action Context', actionContext);
 
     const bestSelector = actionContext.getBestSelector();
     const tagName = actionContext.getTagName();
@@ -303,14 +308,21 @@ export abstract class ScriptBuilder {
   buildCodes = () => {
     let prevActionContext: ActionContext | undefined;
 
-    for (const actionContext of this.actionContexts) {
+    // for (const actionContext of this.actionContexts) {
+    for (let i = 0; i < this.actionContexts.length; i++) {
+      const actionContext = this.actionContexts[i];
+
       if (!actionContext.getActionState().isStateful) {
         if (
           prevActionContext !== undefined &&
           prevActionContext.getActionState().isStateful
         ) {
+          this.currentActionContextIndex = i - 1;
+          console.log('set currentActionContextIndex', i);
           this.transformActionIntoCodes(prevActionContext);
         }
+        this.currentActionContextIndex = i;
+        console.log('set currentActionContextIndex', i);
         this.transformActionIntoCodes(actionContext);
       }
       prevActionContext = actionContext;
@@ -611,11 +623,36 @@ ${this.codes.join('')}
 }
 
 export class CypressScriptBuilder extends ScriptBuilder {
+  // constructor = (showComments: boolean) {
+
+  //   super(showComments)
+  // }
+  private readonly uuids: string[];
+
+  constructor(showComments: boolean) {
+    console.log('REINIT CYPRESS SCRIPTBUIDLER');
+    super(showComments);
+    this.uuids = [];
+  }
+
+  findOrCreateId() {
+    const currentActionContext =
+      this.actionContexts[this.currentActionContextIndex];
+    let currentAction = currentActionContext.getAction();
+
+    console.log(
+      'currentAction Timestamp',
+      currentAction.timestamp,
+      currentAction
+    );
+    return String(currentAction.timestamp || Math.random());
+  }
+
   // Cypress automatically detects and waits for the page to finish loading
   click = (selector: string, causesNavigation: boolean) => {
     // this.pushCodes(`cy.get('${selector}').click();`);
 
-    const id = uuid();
+    const id = this.findOrCreateId();
     this.pushCodes(`
   ${id}:
     id: ${id}
@@ -643,7 +680,7 @@ export class CypressScriptBuilder extends ScriptBuilder {
   load = (url: string) => {
     // this.pushCodes(`cy.visit('${url}');`);
 
-    const id = uuid();
+    const id = this.findOrCreateId();
     this.pushCodes(`
   ${id}:
     id: ${id}
@@ -670,7 +707,7 @@ export class CypressScriptBuilder extends ScriptBuilder {
   fill = (selector: string, value: string, causesNavigation: boolean) => {
     // this.pushCodes(`cy.get('${selector}').type(${JSON.stringify(value)});`);
 
-    const id = uuid();
+    const id = this.findOrCreateId();
     this.pushCodes(`
   ${id}:
     id: ${id}
@@ -753,9 +790,9 @@ export class CypressScriptBuilder extends ScriptBuilder {
 
     // For each pair, create an edge
     const edges = pairs.map(([node, nextNode]) => {
-      const id = uuid();
       const sourceId = node.split(':')[0].trim();
       const targetId = nextNode.split(':')[0].trim();
+      const id = sourceId + '_' + targetId;
       return `
   ${id}:
     id: ${id}

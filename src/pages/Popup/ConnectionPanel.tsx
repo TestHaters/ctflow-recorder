@@ -5,6 +5,7 @@ import {
   initTestDbOnFirestore,
   testFirestoreSync,
   addRecordingAction,
+  setRecordingAction,
 } from '../../helpers/firestore';
 
 import { usePreferredLibrary, useRecordingState } from '../Common/hooks';
@@ -25,13 +26,13 @@ const ConnectionPanel = () => {
       const testData = YAML.parse(ctflowCode);
       console.log(testData);
 
-      addRecordingAction(
-        'test',
-        Object.values(testData['nodes']),
-        Object.values(testData['edges'])
+      setRecordingAction(
+        String(recordingTabId),
+        Object.values(testData['nodes'] || []),
+        Object.values(testData['edges'] || [])
       );
     }
-  }, [actions]);
+  }, [actions, recordingTabId]);
 
   return <></>;
 };

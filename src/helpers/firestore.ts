@@ -142,3 +142,22 @@ export async function addRecordingAction(
 
   await setDoc(doc(firestoreDB, 'recorders', id), newDoc);
 }
+
+export async function setRecordingAction(
+  id: string,
+  nodes: any[],
+  edges: any[]
+) {
+  console.log('here');
+  // create new doc if not exist
+  let newDoc = {
+    nodes: nodes,
+    edges: edges,
+    ip: '127.0.0.1',
+    userId: 'test',
+    created_at: new Date(),
+    updated_at: new Date(),
+  };
+
+  await setDoc(doc(firestoreDB, 'recorders', id), newDoc);
+}
