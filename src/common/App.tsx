@@ -35,7 +35,6 @@ const App = () => {
             <OptionsDropdown />
           </HStack>
         </HStack>
-        {openAIKey ? <TaskUI /> : <SetAPIKey />}
       </Box>
     </ChakraProvider>
   );

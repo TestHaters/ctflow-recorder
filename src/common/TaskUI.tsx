@@ -33,6 +33,7 @@ const TaskUI = () => {
   );
 
   const runTask = () => {
+    console.log('instructions', state.instructions);
     state.instructions && state.runTask(toastError);
   };
 
