@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Button, ButtonGroup } from '@chakra-ui/react';
+import { Button, Input } from '@chakra-ui/react';
+import { v4 as uuidv4 } from 'uuid';
+import YAML from 'yaml';
 
 import {
   faSquare,
@@ -10,6 +12,8 @@ import {
   faCopy,
   faCheck,
   faChevronLeft,
+  faSync,
+  faUpload,
 } from '@fortawesome/free-solid-svg-icons';
 
 import Logo from '../Common/Logo';
@@ -31,6 +35,7 @@ import ScriptTypeSelect from '../Common/ScriptTypeSelect';
 import type { Action } from '../types';
 import { ActionsMode, ScriptType } from '../types';
 import { onPageView, onNewRecording } from './analytics';
+import { setRecordingAction } from '../../helpers/firestore';
 
 onPageView('/popup');
 
@@ -44,11 +49,14 @@ function LastStepPanel({
   const [preferredLibrary, setPreferredLibrary] = usePreferredLibrary();
 
   const [showActionsMode, setShowActionsMode] = useState<ActionsMode>(
-    ActionsMode.Code
+    // ActionsMode.Code
+    ActionsMode.Actions
   );
   const [copyCodeConfirm, setCopyCodeConfirm] = useState<boolean>(false);
 
   const displayedScriptType = preferredLibrary ?? ScriptType.Cypress;
+
+  // Set default Action Mode is showing Actions
 
   return (
     <div>
@@ -123,13 +131,13 @@ function LastStepPanel({
 
 const RecordingPanel = () => {
   const [preferredLibrary, setPreferredLibrary] = usePreferredLibrary();
-
   const [recordingTabId, actions] = useRecordingState();
-
   const [currentTabId, setCurrentTabId] = useState<number | null>(null);
-
   const [isShowingLastTest, setIsShowingLastTest] = useState<boolean>(false);
-
+  const [isSyncingToCloud, setIsSyncingToCloud] = useState<boolean>(false);
+  const [cloudRecordingKey, setCloudRecordingKey] = useState<string>(uuidv4());
+  const [copyCloudRecordingKeyConfirm, setCopyCloudRecordingKeyConfirm] =
+    useState<boolean>(false);
   const [showBetaCTA, setShowBetaCTA] = useState<boolean>(
     localStorage.getItem('showBetaCta') !== 'false'
   );
@@ -146,7 +154,7 @@ const RecordingPanel = () => {
     (async () => {
       const currentTab = await getCurrentTab();
       const tabId = currentTab.id;
-      if (tabId == undefined) {
+      if (tabId === undefined) {
         return;
       }
       const isCypress = await isCypressBrowser(tabId);
@@ -156,6 +164,34 @@ const RecordingPanel = () => {
     })();
   }, []);
 
+  useEffect(() => {
+    syncToCloud(actions, cloudRecordingKey);
+  }, [actions, recordingTabId, cloudRecordingKey]);
+
+  const syncToCloud = async (actions: any, cloudRecordingKey: string) => {
+    setIsSyncingToCloud(true);
+
+    console.log('start syncing');
+    if (actions.length > 0) {
+      const ctflowCode = genCode(actions, true, ScriptType.Cypress);
+      console.log(ctflowCode);
+      const testData = YAML.parse(ctflowCode);
+      console.log(testData);
+
+      setRecordingAction(
+        String(cloudRecordingKey),
+        Object.values(testData['nodes'] || []),
+        Object.values(testData['edges'] || [])
+      );
+    }
+
+    console.log('finish syncing');
+    // setIsSyncingToCloud(false)
+
+    setTimeout(() => {
+      setIsSyncingToCloud(false);
+    }, 500);
+  };
   const onRecordNewTestClick = async () => {
     onNewRecording(preferredLibrary ?? ScriptType.Cypress);
 
@@ -200,6 +236,60 @@ const RecordingPanel = () => {
   return (
     <>
       <div className="Popup">
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'nowrap',
+            placeItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <b>Cloud Recording Id</b>
+
+          <Input
+            style={{ maxWidth: '350px' }}
+            placeholder="Cloud Recording Key"
+            value={cloudRecordingKey}
+            onChange={(event: any) => setCloudRecordingKey(event.target.value)}
+            type={'text'}
+          />
+
+          <CopyToClipboard
+            text={cloudRecordingKey}
+            onCopy={() => {
+              setCopyCloudRecordingKeyConfirm(true);
+              setTimeout(() => {
+                setCopyCloudRecordingKeyConfirm(false);
+              }, 2000);
+            }}
+          >
+            <Button
+              className={`text-sm link-button ${
+                copyCloudRecordingKeyConfirm ? 'text-green' : ''
+              }`}
+            >
+              <FontAwesomeIcon
+                icon={copyCloudRecordingKeyConfirm ? faCheck : faCopy}
+                size="sm"
+              />{' '}
+              &nbsp; Copy Cloud ID
+            </Button>
+          </CopyToClipboard>
+
+          <Button
+            className="btn-primary-outline m-4"
+            onClick={() => {
+              syncToCloud(actions, cloudRecordingKey);
+            }}
+          >
+            <FontAwesomeIcon
+              icon={isSyncingToCloud ? faUpload : faSync}
+              size="sm"
+            />{' '}
+            &nbsp; {isSyncingToCloud ? 'Syncing...' : 'Sync To Cloud'}
+          </Button>
+        </div>
+
         {activePage === 'recording' && (
           // {(
           <>
