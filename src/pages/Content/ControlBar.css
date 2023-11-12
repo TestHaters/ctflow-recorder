@@ -37,7 +37,7 @@
 
 .ControlBar .last-action-preview {
   font-size: 18px;
-  max-width: 360px;
+  max-width: 240px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -48,4 +48,15 @@
   overflow-y: scroll;
   overflow-x: hidden;
   border-top: 1px solid #767676;
+}
+
+.ControlBar #ctflow-recorder-tab-list-btn {
+  width: 100px;
+  height: 100px;
+  background: #3788f6;
+  text-align: center;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

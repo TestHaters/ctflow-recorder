@@ -10,9 +10,11 @@ var webpack = require('webpack'),
 const ASSET_PATH = process.env.ASSET_PATH || '/';
 const MANIFEST_VERSION = process.env.MANIFEST_VERSION;
 
-var alias = {
-  'react-dom': '@hot-loader/react-dom',
-};
+// fix error relate to https://stackoverflow.com/questions/71682733/react-select-error-on-upgrade-typeerror-dispatcher-useinsertioneffect-is-not-a
+// var alias = {
+//   'react-dom': '@hot-loader/react-dom',
+// };
+var alias = {};
 
 // load the secrets
 var secretsPath = path.join(__dirname, 'secrets.' + env.NODE_ENV + '.js');
@@ -37,10 +39,14 @@ if (fileSystem.existsSync(secretsPath)) {
 var options = {
   mode: process.env.NODE_ENV || 'development',
   entry: {
+    newtab: path.join(__dirname, 'src', 'pages', 'Newtab', 'index.jsx'),
+    options: path.join(__dirname, 'src', 'pages', 'Options', 'index.jsx'),
     popup: path.join(__dirname, 'src', 'pages', 'Popup', 'index.jsx'),
     background: path.join(__dirname, 'src', 'pages', 'Background', 'index.ts'),
     contentScript: path.join(__dirname, 'src', 'pages', 'Content', 'index.tsx'),
     bridge: path.join(__dirname, 'src', 'pages', 'Bridge', 'index.ts'),
+    devtools: path.join(__dirname, 'src', 'pages', 'Devtools', 'index.js'),
+    panel: path.join(__dirname, 'src', 'pages', 'Panel', 'index.jsx'),
     cypressTrigger: path.join(
       __dirname,
       'src',
@@ -55,6 +61,7 @@ var options = {
   output: {
     path: path.resolve(__dirname, 'build'),
     filename: '[name].bundle.js',
+    clean: true,
     publicPath: ASSET_PATH,
   },
   module: {
@@ -129,6 +136,33 @@ var options = {
     new CopyWebpackPlugin({
       patterns: [
         {
+          from: 'src/pages/Content/content.styles.css',
+          to: path.join(__dirname, 'build'),
+          force: true,
+        },
+      ],
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: 'src/assets/img/icon-128.png',
+          to: path.join(__dirname, 'build'),
+          force: true,
+        },
+      ],
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: 'src/assets/img/icon-34.png',
+          to: path.join(__dirname, 'build'),
+          force: true,
+        },
+      ],
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        {
           from: 'src/assets/img',
           to: path.join(__dirname, 'build'),
           force: true,
@@ -139,6 +173,36 @@ var options = {
       template: path.join(__dirname, 'src', 'pages', 'Popup', 'index.html'),
       filename: 'popup.html',
       chunks: ['popup'],
+      cache: false,
+    }),
+    new HtmlWebpackPlugin({
+      template: path.join(__dirname, 'src', 'pages', 'Newtab', 'index.html'),
+      filename: 'newtab.html',
+      chunks: ['newtab'],
+      cache: false,
+    }),
+    new HtmlWebpackPlugin({
+      template: path.join(__dirname, 'src', 'pages', 'Options', 'index.html'),
+      filename: 'options.html',
+      chunks: ['options'],
+      cache: false,
+    }),
+    new HtmlWebpackPlugin({
+      template: path.join(__dirname, 'src', 'pages', 'Popup', 'index.html'),
+      filename: 'popup.html',
+      chunks: ['popup'],
+      cache: false,
+    }),
+    new HtmlWebpackPlugin({
+      template: path.join(__dirname, 'src', 'pages', 'Devtools', 'index.html'),
+      filename: 'devtools.html',
+      chunks: ['devtools'],
+      cache: false,
+    }),
+    new HtmlWebpackPlugin({
+      template: path.join(__dirname, 'src', 'pages', 'Panel', 'index.html'),
+      filename: 'panel.html',
+      chunks: ['panel'],
       cache: false,
     }),
   ],

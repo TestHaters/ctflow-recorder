@@ -9,8 +9,14 @@ import {
   executeCleanUp,
 } from '../Common/utils';
 
+// import { useAppState } from "../../state/store";
+
 const HOVER_CTX_MENU_ID = 'deploysentinel-menu-id';
 const AWAIT_TEXT_CTX_MENU_ID = 'deploysentinel-menu-await-text-id';
+
+console.log('This is the background page.');
+console.log('Put the background scripts here.');
+let popupWindowId: number | null = null;
 
 async function recordNavigationEvent(
   url: string,
@@ -64,47 +70,98 @@ async function onNavEvent(
   );
 }
 
-chrome.runtime.onMessage.addListener(async function (
-  request,
-  sender,
-  sendResponse
-) {
-  if (request.type === 'start-recording') {
-    const testEditorTabId = sender.tab?.id;
+function startListener() {
+  console.log(
+    'Index: 803: add chrome runtime listener in background index.ts 123'
+  );
 
-    const newUrl = request.url;
-    const newTab = await createTab(newUrl);
-    const tabId = newTab.id;
+  chrome.runtime.onMessage.addListener(async function (
+    request,
+    sender,
+    sendResponse
+  ) {
+    console.log(
+      'Index: Message received from page background index.ts 123',
+      request
+    );
 
-    if (tabId == null) {
-      throw new Error('New tab id not defined');
+    let popupWindowId: number | null = null;
+
+    console.log(
+      'check request run time',
+      request?.source === 'control-bar' && request?.type === 'run-task'
+    );
+    // console.log(lastTriggerAITaskAt)
+
+    if (request?.source === 'control-bar' && request?.type === 'run-task') {
+      console.log('I SHould run task');
+      // setLastTriggerAITaskAt(Date.now());
+      // console.log("Last Trigger AI At", lastTriggerAITaskAt)
+
+      if (popupWindowId === null || popupWindowId === undefined) {
+        // Create a new popup window if it doesn't exist
+        chrome.windows.create(
+          {
+            url: chrome.runtime.getURL(
+              'popup.html?tabId=' + (sender?.tab?.id ?? '')
+            ),
+            // url: chrome.runtime.getURL("popup.html?tabId=123"),
+            type: 'popup',
+            width: 800,
+            height: 1000,
+          },
+          (window) => {
+            if (window && window.id) {
+              // Check if window and window.id are both defined
+              popupWindowId = window.id;
+            }
+          }
+        );
+      } else {
+        // Focus the existing popup window
+        chrome.windows.update(popupWindowId, { focused: true });
+      }
     }
 
-    setStartRecordingStorage(tabId, 0, newUrl, testEditorTabId);
-  } else if (request.type === 'forward-recording') {
-    // Focus the original deploysentinel webapp tab post-recording
-    chrome.tabs.update(request.tabId, { active: true });
+    if (request.type === 'start-recording') {
+      const testEditorTabId = sender.tab?.id;
 
-    chrome.tabs.sendMessage(request.tabId, {
-      type: 'playwright-test-recording',
-      code: request.code,
-      actions: request.actions,
-    });
-  } else if (request.type === 'cypress-trigger-start-recording') {
-    const tabId = sender.tab?.id;
+      const newUrl = request.url;
+      const newTab = await createTab(newUrl);
+      const tabId = newTab.id;
 
-    if (tabId == null) {
-      throw new Error('Cypress tab not defined');
+      if (tabId == null) {
+        throw new Error('New tab id not defined');
+      }
+
+      setStartRecordingStorage(tabId, 0, newUrl, testEditorTabId);
+    } else if (request.type === 'forward-recording') {
+      // Focus the original deploysentinel webapp tab post-recording
+      chrome.tabs.update(request.tabId, { active: true });
+
+      chrome.tabs.sendMessage(request.tabId, {
+        type: 'playwright-test-recording',
+        code: request.code,
+        actions: request.actions,
+      });
+    } else if (request.type === 'cypress-trigger-start-recording') {
+      const tabId = sender.tab?.id;
+
+      if (tabId == null) {
+        throw new Error('Cypress tab not defined');
+      }
+
+      const autFrame = await getCypressAutFrame(tabId);
+      const { url, frameId } = autFrame;
+
+      setStartRecordingStorage(tabId, frameId, url);
+      await executeCleanUp(tabId, frameId);
+      await executeScript(tabId, frameId, 'contentScript.bundle.js');
     }
+  });
+}
 
-    const autFrame = await getCypressAutFrame(tabId);
-    const { url, frameId } = autFrame;
-
-    setStartRecordingStorage(tabId, frameId, url);
-    await executeCleanUp(tabId, frameId);
-    await executeScript(tabId, frameId, 'contentScript.bundle.js');
-  }
-});
+startListener();
 
 // Set recording as ended when the recording tab is closed
 chrome.tabs.onRemoved.addListener(async (tabId) => {
