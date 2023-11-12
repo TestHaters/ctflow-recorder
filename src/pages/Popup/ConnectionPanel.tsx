@@ -17,22 +17,22 @@ const ConnectionPanel = () => {
   // testFirestore()
   // testFirestoreSync()
 
-  const [recordingTabId, actions] = useRecordingState();
+  // const [recordingTabId, actions] = useRecordingState();
 
-  useEffect(() => {
-    if (actions.length > 0) {
-      const ctflowCode = genCode(actions, true, ScriptType.Cypress);
-      console.log(ctflowCode);
-      const testData = YAML.parse(ctflowCode);
-      console.log(testData);
+  // useEffect(() => {
+  //   if (actions.length > 0) {
+  //     const ctflowCode = genCode(actions, true, ScriptType.Cypress);
+  //     console.log(ctflowCode);
+  //     const testData = YAML.parse(ctflowCode);
+  //     console.log(testData);
 
-      setRecordingAction(
-        String(recordingTabId),
-        Object.values(testData['nodes'] || []),
-        Object.values(testData['edges'] || [])
-      );
-    }
-  }, [actions, recordingTabId]);
+  //     setRecordingAction(
+  //       String(recordingTabId),
+  //       Object.values(testData['nodes'] || []),
+  //       Object.values(testData['edges'] || [])
+  //     );
+  //   }
+  // }, [actions, recordingTabId]);
 
   return <></>;
 };

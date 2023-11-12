@@ -241,6 +241,7 @@ export abstract class ScriptBuilder {
         );
         break;
       case ActionType.Input: {
+        console.log('PUCKING IN PUT HERE', action);
         if (tagName === TagName.Select) {
           this.select(bestSelector as string, value ?? '', causesNavigation);
         } else if (
@@ -308,23 +309,20 @@ export abstract class ScriptBuilder {
   buildCodes = () => {
     let prevActionContext: ActionContext | undefined;
 
-    // for (const actionContext of this.actionContexts) {
-    for (let i = 0; i < this.actionContexts.length; i++) {
-      const actionContext = this.actionContexts[i];
-
-      if (!actionContext.getActionState().isStateful) {
-        if (
-          prevActionContext !== undefined &&
-          prevActionContext.getActionState().isStateful
-        ) {
-          this.currentActionContextIndex = i - 1;
-          console.log('set currentActionContextIndex', i);
-          this.transformActionIntoCodes(prevActionContext);
-        }
-        this.currentActionContextIndex = i;
-        console.log('set currentActionContextIndex', i);
-        this.transformActionIntoCodes(actionContext);
-      }
+    // stateful = Textarea?
+    //  I don't get these code, if I don't comment out these line, the fill into textarea will not work
+    for (const actionContext of this.actionContexts) {
+      // if (!actionContext.getActionState().isStateful) {
+      //   if (
+      //     prevActionContext !== undefined &&
+      //     prevActionContext.getActionState().isStateful
+      //   ) {
+      //     console.log("the previous is not stateful and current is not stateful")
+      //     this.transformActionIntoCodes(prevActionContext);
+      //   }
+      //   this.transformActionIntoCodes(actionContext);
+      // }
+      this.transformActionIntoCodes(actionContext);
       prevActionContext = actionContext;
     }
 
@@ -636,6 +634,7 @@ export class CypressScriptBuilder extends ScriptBuilder {
   }
 
   findOrCreateId() {
+    return uuid();
     const currentActionContext =
       this.actionContexts[this.currentActionContextIndex];
     let currentAction = currentActionContext.getAction();
