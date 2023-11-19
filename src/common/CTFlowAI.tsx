@@ -28,6 +28,7 @@ const CTFlowAI = () => {
             <OptionsDropdown />
           </HStack>
         </HStack>
+        {openAIKey ? <TaskUI /> : <SetAPIKey />}
       </Box>
     </ChakraProvider>
   );
