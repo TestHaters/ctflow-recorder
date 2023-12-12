@@ -161,3 +161,21 @@ export async function setRecordingAction(
 
   await setDoc(doc(firestoreDB, 'recorders', id), newDoc);
 }
+
+export async function setAIRecord(
+  id: string,
+  currentHtml: string,
+  simplifiedHtml: string
+) {
+  await setDoc(doc(firestoreDB, 'ai_records', id), {
+    currentHtml,
+    simplifiedHtml,
+    thoughts_actions: [],
+    current_thought: '',
+    current_actions: [{}],
+    ip: '127.0.0.1',
+    userId: 'test',
+    created_at: new Date(),
+    updated_at: new Date(),
+  });
+}
