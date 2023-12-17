@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { onPageView, onNewRecording } from './analytics';
 import CTFlowAI from '../../common/CTFlowAI';
+import { callRPC } from '../../helpers/pageRPC';
 
 import { Heading, Text, Box, Badge } from '@chakra-ui/react';
 
@@ -16,6 +17,7 @@ onPageView('/popup');
 
 import RecordingPanel from './RecordingPanel';
 import ConnectionPanel from './ConnectionPanel';
+import AIPanel from './AIPanel';
 
 const Popup = () => {
   return (
@@ -30,6 +32,7 @@ const Popup = () => {
       </Box>
 
       <Accordion allowMultiple>
+        {/* AI PANEL */}
         <AccordionItem>
           <h2>
             <AccordionButton
@@ -57,14 +60,13 @@ const Popup = () => {
             </AccordionButton>
           </h2>
           <AccordionPanel pb={4}>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
-            ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-            aliquip ex ea commodo consequat.
+            This is the way you work with it
+            <AIPanel></AIPanel>
             <CTFlowAI />
           </AccordionPanel>
         </AccordionItem>
 
+        {/* RECORDING PANEL */}
         <AccordionItem>
           <h2>
             <AccordionButton
@@ -95,7 +97,9 @@ const Popup = () => {
             <RecordingPanel />
           </AccordionPanel>
         </AccordionItem>
+        {/* END OF RECORDING PANEL */}
 
+        {/* SETTINGS PANEL */}
         <AccordionItem>
           <h2>
             <AccordionButton
@@ -118,10 +122,10 @@ const Popup = () => {
             </AccordionButton>
           </h2>
           <AccordionPanel pb={4}>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
-            ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-            aliquip ex ea commodo consequat.
+            Lorem ipsum dolor sit amet consectetur, adipisicing elit. Sequi, sit
+            nemo est nulla ex esse quia reiciendis dolorem doloribus. Soluta
+            aperiam modi nobis voluptates facere corrupti? Atque, quam eaque?
+            Laboriosam?
             <ConnectionPanel />
           </AccordionPanel>
         </AccordionItem>

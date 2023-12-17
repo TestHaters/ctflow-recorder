@@ -17,6 +17,7 @@
     "activeTab",
     "storage",
     "contextMenus",
+    "desktopCapture",
     "webNavigation",
     "<all_urls>"
   ],

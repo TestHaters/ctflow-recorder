@@ -108,6 +108,7 @@ export default function genSelectors(element: HTMLElement | null) {
 }
 
 export function getBestSelectorForAction(action: Action, library: ScriptType) {
+  console.log('Choose the best selector');
   switch (action.type) {
     case ActionType.Click:
     case ActionType.Hover:
@@ -191,4 +192,90 @@ export function getBestSelectorForAction(action: Action, library: ScriptType) {
       break;
   }
   return null;
+}
+
+// This function will get all selectors based on the priority instead of the best.
+export function getSelectorsForAction(
+  action: Action,
+  library: ScriptType
+): (string | null)[] {
+  switch (action.type) {
+    case ActionType.Click:
+    case ActionType.Hover:
+    case ActionType.DragAndDrop: {
+      const selectors = action.selectors;
+      console.log('Choose the best selector,', selectors);
+      // Only supported for playwright, less than 25 characters, and element only has text inside
+      const textSelector =
+        library === ScriptType.Playwright &&
+        selectors?.text?.length != null &&
+        selectors?.text?.length < 25 &&
+        action.hasOnlyText
+          ? `text=${selectors.text}`
+          : null;
+
+      if (action.tagName === TagName.Input) {
+        return [
+          selectors.testIdSelector,
+          selectors?.id,
+          selectors?.formSelector,
+          selectors?.accessibilitySelector,
+          selectors?.generalSelector,
+          selectors?.attrSelector,
+        ].filter((x) => x != null);
+      }
+      if (action.tagName === TagName.A) {
+        return [
+          selectors.testIdSelector,
+          selectors?.id,
+          selectors?.hrefSelector,
+          selectors?.accessibilitySelector,
+          selectors?.generalSelector,
+          selectors?.attrSelector,
+        ].filter((x) => x != null);
+      }
+
+      // Prefer text selectors for spans, ems over general selectors
+      if (
+        action.tagName === TagName.Span ||
+        action.tagName === TagName.EM ||
+        action.tagName === TagName.Cite ||
+        action.tagName === TagName.B ||
+        action.tagName === TagName.Strong
+      ) {
+        return [
+          selectors.testIdSelector,
+          selectors?.id,
+          selectors?.accessibilitySelector,
+          selectors?.hrefSelector,
+          textSelector,
+          selectors?.generalSelector,
+          selectors?.attrSelector,
+        ].filter((x) => x != null);
+      }
+      return [
+        selectors.testIdSelector,
+        selectors?.id,
+        selectors?.accessibilitySelector,
+        selectors?.hrefSelector,
+        selectors?.generalSelector,
+        selectors?.attrSelector,
+      ].filter((x) => x != null);
+    }
+    case ActionType.Input:
+    case ActionType.Keydown: {
+      const selectors = action.selectors;
+      return [
+        selectors.testIdSelector,
+        selectors?.id,
+        selectors?.formSelector,
+        selectors?.accessibilitySelector,
+        selectors?.generalSelector,
+        selectors?.attrSelector,
+      ].filter((x) => x != null);
+    }
+    default:
+      break;
+  }
+  return [];
 }
