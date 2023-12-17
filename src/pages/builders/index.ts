@@ -1,4 +1,4 @@
-import { getBestSelectorForAction } from './selector';
+import { getBestSelectorForAction, getSelectorsForAction } from './selector';
 
 import type { Action } from '../types';
 import {
@@ -90,6 +90,7 @@ export class ActionContext extends BaseAction {
 
     switch (type) {
       case ActionType.Click:
+        console.log('description for click action');
         return `Click on <${tagName.toLowerCase()}> ${
           selectors.text != null && selectors.text.length > 0
             ? `"${truncateText(selectors.text.replace(/\s/g, ' '), 25)}"`
@@ -139,6 +140,14 @@ export class ActionContext extends BaseAction {
   getBestSelector(): string | null {
     return getBestSelectorForAction(this.action, this.scriptType);
   }
+
+  getAlternativeSelectors(): string[] {
+    return [];
+  }
+
+  getSelectors(): (null | string)[] {
+    return getSelectorsForAction(this.action, this.scriptType);
+  }
 }
 
 export abstract class ScriptBuilder {
@@ -157,50 +166,64 @@ export abstract class ScriptBuilder {
     this.showComments = showComments;
   }
 
-  abstract click: (selector: string, causesNavigation: boolean) => this;
+  abstract click: (
+    selectors: (null | string)[],
+    causesNavigation: boolean,
+    description: string
+  ) => this;
 
-  abstract hover: (selector: string, causesNavigation: boolean) => this;
+  abstract hover: (
+    selectors: (null | string)[],
+    causesNavigation: boolean,
+    description: string
+  ) => this;
 
-  abstract load: (url: string) => this;
+  abstract load: (url: string, description: string) => this;
 
-  abstract resize: (width: number, height: number) => this;
+  abstract resize: (width: number, height: number, description: string) => this;
 
   abstract fill: (
-    selector: string,
+    selectors: (null | string)[],
     value: string,
-    causesNavigation: boolean
+    causesNavigation: boolean,
+    description: string
   ) => this;
 
   abstract type: (
-    selector: string,
+    selectors: (null | string)[],
     value: string,
-    causesNavigation: boolean
+    causesNavigation: boolean,
+    description: string
   ) => this;
 
   abstract keydown: (
-    selector: string,
+    selectors: (null | string)[],
     key: string,
-    causesNavigation: boolean
+    causesNavigation: boolean,
+    description: string
   ) => this;
 
   abstract select: (
-    selector: string,
+    selectors: (null | string)[],
     key: string,
-    causesNavigation: boolean
+    causesNavigation: boolean,
+    description: string
   ) => this;
 
   abstract wheel: (
     deltaX: number,
     deltaY: number,
     pageXOffset?: number,
-    pageYOffset?: number
+    pageYOffset?: number,
+    description?: string
   ) => this;
 
   abstract dragAndDrop: (
     sourceX: number,
     sourceY: number,
     targetX: number,
-    targetY: number
+    targetY: number,
+    description: string
   ) => this;
 
   abstract fullScreenshot: () => this;
@@ -210,15 +233,18 @@ export abstract class ScriptBuilder {
   abstract buildScript: () => string;
 
   private transformActionIntoCodes = (actionContext: ActionContext) => {
-    if (this.showComments) {
-      const actionDescription = actionContext.getDescription();
-      // this.pushComments(`// ${actionDescription}`);
-      // Don't push description
-    }
+    // if (this.showComments) {
+    //   const actionDescription = actionContext.getDescription();
+    //   // this.pushComments(`// ${actionDescription}`);
+    //   // Don't push description
+    // }
+
+    const actionDescription = actionContext.getDescription();
 
     console.log('build code: Action Context', actionContext);
 
-    const bestSelector = actionContext.getBestSelector();
+    // const bestSelector = actionContext.getBestSelector();
+    const selectors = actionContext.getSelectors();
     const tagName = actionContext.getTagName();
     const value = actionContext.getValue();
     const inputType = actionContext.getInputType();
@@ -228,22 +254,28 @@ export abstract class ScriptBuilder {
 
     switch (actionContext.getType()) {
       case ActionType.Click:
-        this.click(bestSelector as string, causesNavigation);
+        // this.click(bestSelector as string, causesNavigation);
+        this.click(selectors, causesNavigation, actionDescription);
         break;
       case ActionType.Hover:
-        this.hover(bestSelector as string, causesNavigation);
+        this.hover(selectors, causesNavigation, actionDescription);
         break;
       case ActionType.Keydown:
         this.keydown(
-          bestSelector as string,
+          selectors,
           action.key ?? '',
-          causesNavigation
+          causesNavigation,
+          actionDescription
         );
         break;
       case ActionType.Input: {
-        console.log('PUCKING IN PUT HERE', action);
         if (tagName === TagName.Select) {
-          this.select(bestSelector as string, value ?? '', causesNavigation);
+          this.select(
+            selectors,
+            value ?? '',
+            causesNavigation,
+            actionDescription
+          );
         } else if (
           // If the input is "fillable" or a text area
           tagName === TagName.Input &&
@@ -251,26 +283,42 @@ export abstract class ScriptBuilder {
           FILLABLE_INPUT_TYPES.includes(inputType)
         ) {
           // Do more actionability checks
-          this.fill(bestSelector as string, value ?? '', causesNavigation);
+          this.fill(
+            selectors,
+            value ?? '',
+            causesNavigation,
+            actionDescription
+          );
         } else if (tagName === TagName.TextArea) {
-          this.fill(bestSelector as string, value ?? '', causesNavigation);
+          this.fill(
+            selectors,
+            value ?? '',
+            causesNavigation,
+            actionDescription
+          );
         } else {
-          this.type(bestSelector as string, value ?? '', causesNavigation);
+          this.type(
+            selectors,
+            value ?? '',
+            causesNavigation,
+            actionDescription
+          );
         }
         break;
       }
       case ActionType.Load:
-        this.load(action.url);
+        this.load(action.url, actionDescription);
         break;
       case ActionType.Resize:
-        this.resize(action.width, action.height);
+        this.resize(action.width, action.height, actionDescription);
         break;
       case ActionType.Wheel:
         this.wheel(
           action.deltaX,
           action.deltaY,
           action.pageXOffset,
-          action.pageYOffset
+          action.pageYOffset,
+          actionDescription
         );
         break;
       case ActionType.FullScreenshot:
@@ -284,7 +332,8 @@ export abstract class ScriptBuilder {
           action.sourceX,
           action.sourceY,
           action.targetX,
-          action.targetY
+          action.targetY,
+          actionDescription
         );
         break;
       default:
@@ -340,286 +389,6 @@ export abstract class ScriptBuilder {
   getLatestCode = () => this.codes[this.codes.length - 1];
 }
 
-export class PlaywrightScriptBuilder extends ScriptBuilder {
-  private waitForNavigation() {
-    return `page.waitForNavigation()`;
-  }
-
-  private waitForActionAndNavigation(action: string) {
-    return `await Promise.all([\n    ${action},\n    ${this.waitForNavigation()}\n  ]);`;
-  }
-
-  click = (selector: string, causesNavigation: boolean) => {
-    const actionStr = `page.click('${selector}')`;
-    const action = causesNavigation
-      ? this.waitForActionAndNavigation(actionStr)
-      : `await ${actionStr};`;
-    this.pushCodes(action);
-    return this;
-  };
-
-  hover = (selector: string, causesNavigation: boolean) => {
-    const actionStr = `page.hover('${selector}')`;
-    const action = causesNavigation
-      ? this.waitForActionAndNavigation(actionStr)
-      : `await ${actionStr};`;
-    this.pushCodes(action);
-    return this;
-  };
-
-  load = (url: string) => {
-    this.pushCodes(`await page.goto('${url}');`);
-    return this;
-  };
-
-  resize = (width: number, height: number) => {
-    this.pushCodes(
-      `await page.setViewportSize({ width: ${width}, height: ${height} });`
-    );
-    return this;
-  };
-
-  fill = (selector: string, value: string, causesNavigation: boolean) => {
-    const actionStr = `page.fill('${selector}', ${JSON.stringify(value)})`;
-    const action = causesNavigation
-      ? this.waitForActionAndNavigation(actionStr)
-      : `await ${actionStr};`;
-    this.pushCodes(action);
-    return this;
-  };
-
-  type = (selector: string, value: string, causesNavigation: boolean) => {
-    const actionStr = `page.type('${selector}', ${JSON.stringify(value)})`;
-    const action = causesNavigation
-      ? this.waitForActionAndNavigation(actionStr)
-      : `await ${actionStr};`;
-    this.pushCodes(action);
-    return this;
-  };
-
-  select = (selector: string, option: string, causesNavigation: boolean) => {
-    const actionStr = `page.selectOption('${selector}', '${option}')`;
-    const action = causesNavigation
-      ? this.waitForActionAndNavigation(actionStr)
-      : `await ${actionStr};`;
-    this.pushCodes(action);
-    return this;
-  };
-
-  keydown = (selector: string, key: string, causesNavigation: boolean) => {
-    const actionStr = `page.press('${selector}', '${key}')`;
-    const action = causesNavigation
-      ? this.waitForActionAndNavigation(actionStr)
-      : `await ${actionStr};`;
-    this.pushCodes(action);
-    return this;
-  };
-
-  wheel = (deltaX: number, deltaY: number) => {
-    this.pushCodes(
-      `await page.mouse.wheel(${Math.floor(deltaX)}, ${Math.floor(deltaY)});`
-    );
-    return this;
-  };
-
-  fullScreenshot = () => {
-    this.pushCodes(
-      `await page.screenshot({ path: 'screenshot.png', fullPage: true });`
-    );
-    return this;
-  };
-
-  awaitText = (text: string) => {
-    this.pushCodes(`await page.waitForSelector('text=${text}');`);
-    return this;
-  };
-
-  dragAndDrop = (
-    sourceX: number,
-    sourceY: number,
-    targetX: number,
-    targetY: number
-  ) => {
-    this.pushCodes(
-      [
-        `await page.mouse.move(${sourceX}, ${sourceY});`,
-        '  await page.mouse.down();',
-        `  await page.mouse.move(${targetX}, ${targetY});`,
-        '  await page.mouse.up();',
-      ].join('\n')
-    );
-    return this;
-  };
-
-  buildScript = () => {
-    return `import { test, expect } from '@playwright/test';
-
-test('Written with CTFlow Recorder', async ({ page }) => {${this.codes.join(
-      ''
-    )}});`;
-  };
-}
-
-export class PuppeteerScriptBuilder extends ScriptBuilder {
-  private waitForSelector(selector: string) {
-    return `page.waitForSelector('${selector}')`;
-  }
-  private waitForNavigation() {
-    return `page.waitForNavigation()`;
-  }
-  private waitForSelectorAndNavigation(selector: string, action: string) {
-    return `await ${this.waitForSelector(
-      selector
-    )};\n  await Promise.all([\n    ${action},\n    ${this.waitForNavigation()}\n  ]);`;
-  }
-
-  click = (selector: string, causesNavigation: boolean) => {
-    const pageClick = `page.click('${selector}')`;
-    if (causesNavigation) {
-      this.pushCodes(this.waitForSelectorAndNavigation(selector, pageClick));
-    } else {
-      this.pushCodes(
-        `await ${this.waitForSelector(selector)};\n  await ${pageClick};`
-      );
-    }
-    return this;
-  };
-
-  hover = (selector: string, causesNavigation: boolean) => {
-    const pageHover = `page.hover('${selector}')`;
-    if (causesNavigation) {
-      this.pushCodes(this.waitForSelectorAndNavigation(selector, pageHover));
-    } else {
-      this.pushCodes(
-        `await ${this.waitForSelector(selector)};\n  await ${pageHover};`
-      );
-    }
-    return this;
-  };
-
-  load = (url: string) => {
-    this.pushCodes(`await page.goto('${url}');`);
-    return this;
-  };
-
-  resize = (width: number, height: number) => {
-    this.pushCodes(
-      `await page.setViewport({ width: ${width}, height: ${height} });`
-    );
-    return this;
-  };
-
-  type = (selector: string, value: string, causesNavigation: boolean) => {
-    const pageType = `page.type('${selector}', ${JSON.stringify(value)})`;
-    if (causesNavigation) {
-      this.pushCodes(this.waitForSelectorAndNavigation(selector, pageType));
-    } else {
-      this.pushCodes(
-        `await ${this.waitForSelector(selector)};\n  await ${pageType};`
-      );
-    }
-    return this;
-  };
-
-  // Puppeteer doesn't support `fill` so we'll do our own actionability checks
-  // but still type
-  fill = (selector: string, value: string, causesNavigation: boolean) => {
-    const pageType = `page.type('${selector}', ${JSON.stringify(value)})`;
-    if (causesNavigation) {
-      this.pushCodes(
-        this.waitForSelectorAndNavigation(
-          `${selector}:not([disabled])`,
-          pageType
-        )
-      );
-    } else {
-      // Do more actionability checks
-      this.pushCodes(
-        `await ${this.waitForSelector(
-          `${selector}:not([disabled])`
-        )};\n  await ${pageType};`
-      );
-    }
-    return this;
-  };
-
-  select = (selector: string, option: string, causesNavigation: boolean) => {
-    const pageSelectOption = `page.select('${selector}', '${option}')`;
-    if (causesNavigation) {
-      this.pushCodes(
-        this.waitForSelectorAndNavigation(selector, pageSelectOption)
-      );
-    } else {
-      this.pushCodes(
-        `await ${this.waitForSelector(selector)};\n  await ${pageSelectOption};`
-      );
-    }
-    return this;
-  };
-
-  keydown = (selector: string, key: string, causesNavigation: boolean) => {
-    const pagePress = `page.keyboard.press('${key}')`;
-    if (causesNavigation) {
-      this.pushCodes(this.waitForSelectorAndNavigation(selector, pagePress));
-    } else {
-      this.pushCodes(
-        `await page.waitForSelector('${selector}');\n  await page.keyboard.press('${key}');`
-      );
-    }
-    return this;
-  };
-
-  wheel = (deltaX: number, deltaY: number) => {
-    this.pushCodes(
-      `await page.evaluate(() => window.scrollBy(${deltaX}, ${deltaY}));`
-    );
-    return this;
-  };
-
-  fullScreenshot = () => {
-    this.pushCodes(
-      `await page.screenshot({ path: 'screenshot.png', fullPage: true });`
-    );
-    return this;
-  };
-
-  awaitText = (text: string) => {
-    this.pushCodes(
-      `await page.waitForFunction("document.body.innerText.includes('${text}')");`
-    );
-    return this;
-  };
-
-  dragAndDrop = (
-    sourceX: number,
-    sourceY: number,
-    targetX: number,
-    targetY: number
-  ) => {
-    this.pushCodes(
-      [
-        `await page.mouse.move(${sourceX}, ${sourceY});`,
-        '  await page.mouse.down();',
-        `  await page.mouse.move(${targetX}, ${targetY});`,
-        '  await page.mouse.up();',
-      ].join('\n')
-    );
-    return this;
-  };
-
-  buildScript = () => {
-    return `const puppeteer = require('puppeteer');
-(async () => {
-  const browser = await puppeteer.launch({
-    // headless: false, slowMo: 100, // Uncomment to visualize test
-  });
-  const page = await browser.newPage();
-${this.codes.join('')}
-  await browser.close();
-})();`;
-  };
-}
-
 export class CypressScriptBuilder extends ScriptBuilder {
   // constructor = (showComments: boolean) {
 
@@ -648,9 +417,12 @@ export class CypressScriptBuilder extends ScriptBuilder {
   }
 
   // Cypress automatically detects and waits for the page to finish loading
-  click = (selector: string, causesNavigation: boolean) => {
+  click = (
+    selectors: (null | string)[],
+    causesNavigation: boolean,
+    description: string
+  ) => {
     // this.pushCodes(`cy.get('${selector}').click();`);
-
     const id = this.findOrCreateId();
     this.pushCodes(`
   ${id}:
@@ -659,24 +431,32 @@ export class CypressScriptBuilder extends ScriptBuilder {
       x: 0
       y: 0
     type: buttonNode
-    description: description
+    description: ${description}
     componentName: compName
     outputQ:
       - outputQ
     inPorts:
-      field: '${selector}'
+      field: '${selectors[0] as string}'
+      alternative_selectors: ${selectors
+        .slice(1)
+        .map((x) => `\n        - '${x}'`)
+        .join('')}
     outPorts: {}
     data: {}`);
 
     return this;
   };
 
-  hover = (selector: string, causesNavigation: boolean) => {
+  hover = (
+    selectors: (null | string)[],
+    causesNavigation: boolean,
+    description: string
+  ) => {
     // this.pushCodes(`cy.get('${selector}').trigger('mouseover');`);
     return this;
   };
 
-  load = (url: string) => {
+  load = (url: string, description: string) => {
     // this.pushCodes(`cy.visit('${url}');`);
 
     const id = this.findOrCreateId();
@@ -687,7 +467,7 @@ export class CypressScriptBuilder extends ScriptBuilder {
       x: 0
       y: 0
     type: visitNode
-    description: description
+    description: ${description}
     componentName: compName
     outputQ:
       - outputQ
@@ -698,12 +478,17 @@ export class CypressScriptBuilder extends ScriptBuilder {
     return this;
   };
 
-  resize = (width: number, height: number) => {
+  resize = (width: number, height: number, description: string) => {
     // this.pushCodes(`cy.viewport(${width}, ${height});`);
     return this;
   };
 
-  fill = (selector: string, value: string, causesNavigation: boolean) => {
+  fill = (
+    selectors: (null | string)[],
+    value: string,
+    causesNavigation: boolean,
+    description: string
+  ) => {
     // this.pushCodes(`cy.get('${selector}').type(${JSON.stringify(value)});`);
 
     const id = this.findOrCreateId();
@@ -714,29 +499,48 @@ export class CypressScriptBuilder extends ScriptBuilder {
       x: 0
       y: 0
     type: textInputType
-    description: description
+    description: ${description}
     componentName: compName
     outputQ:
       - outputQ
     inPorts:
-      field: '${selector}'
+      field: '${selectors[0] as string}'
+      alternative_selectors: ${selectors
+        .slice(1)
+        .map((x) => `\n        - '${x}'`)
+        .join('')}
       value: ${JSON.stringify(value)}
     outPorts: {}
     data: {}`);
     return this;
   };
 
-  type = (selector: string, value: string, causesNavigation: boolean) => {
+  type = (
+    selectors: (null | string)[],
+    value: string,
+    causesNavigation: boolean,
+    description: string
+  ) => {
     // this.pushCodes(`cy.get('${selector}').type(${JSON.stringify(value)});`);
     return this;
   };
 
-  select = (selector: string, option: string, causesNavigation: boolean) => {
+  select = (
+    selectors: (null | string)[],
+    option: string,
+    causesNavigation: boolean,
+    description: string
+  ) => {
     // this.pushCodes(`cy.get('${selector}').select('${option}');`);
     return this;
   };
 
-  keydown = (selector: string, key: string, causesNavigation: boolean) => {
+  keydown = (
+    selectors: (null | string)[],
+    key: string,
+    causesNavigation: boolean,
+    description: string
+  ) => {
     // this.pushCodes(`cy.get('${selector}').type('{${key}}');`);
     return this;
   };
@@ -815,12 +619,6 @@ export const genCode = (
   let scriptBuilder: ScriptBuilder;
 
   switch (scriptType) {
-    case ScriptType.Playwright:
-      scriptBuilder = new PlaywrightScriptBuilder(showComments);
-      break;
-    case ScriptType.Puppeteer:
-      scriptBuilder = new PuppeteerScriptBuilder(showComments);
-      break;
     case ScriptType.Cypress:
       scriptBuilder = new CypressScriptBuilder(showComments);
       break;
